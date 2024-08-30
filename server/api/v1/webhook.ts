@@ -20,6 +20,8 @@ export default defineEventHandler(async (event) => {
   console.log(body);
 
   if (eventType !== "charge.success" || data.status !== "success") {
+    console.log(eventType, data.status);
+
     throw createError({
       statusCode: 400,
       message: "Invalid event type or status",
@@ -27,6 +29,16 @@ export default defineEventHandler(async (event) => {
   }
 
   const userId = data.metadata?.userId;
+  const plan = {
+    code: data.plan.plan_code,
+    name: data.plan.name,
+    interval: data.plan.interval,
+    amount: data.plan.amount,
+    startAt: formatDate(new Date(data.paid_at)),
+    endAt: formatDate(
+      calculateEndDate(data.plan.interval, new Date(data.paid_at))
+    ),
+  };
 
   if (!userId) {
     throw createError({
@@ -59,9 +71,9 @@ export default defineEventHandler(async (event) => {
 
     await userRef.update({
       status: "paid",
-      updatedAt: new Intl.DateTimeFormat("en-NG").format(
-        Timestamp.now().toDate()
-      ),
+      updatedAt: formatDate(Timestamp.now().toDate()),
+      plan,
+      customerCode: data.customer.customer_code,
     });
 
     const r = {
@@ -79,3 +91,31 @@ export default defineEventHandler(async (event) => {
     });
   }
 });
+
+// Function to calculate the end date based on the interval
+function calculateEndDate(interval: string, startDate: Date): Date {
+  const endDate = new Date(startDate);
+  switch (interval) {
+    case "daily":
+      endDate.setDate(endDate.getDate() + 1);
+      break;
+    case "weekly":
+      endDate.setDate(endDate.getDate() + 7);
+      break;
+    case "monthly":
+      endDate.setMonth(endDate.getMonth() + 1);
+      break;
+    case "yearly":
+      endDate.setFullYear(endDate.getFullYear() + 1);
+      break;
+    default:
+      throw new Error(`Unknown interval: ${interval}`);
+  }
+  return endDate;
+}
+function formatDate(date: Date): string {
+  return new Intl.DateTimeFormat("en-US", {
+    timeStyle: "medium",
+    dateStyle: "medium",
+  }).format(date);
+}

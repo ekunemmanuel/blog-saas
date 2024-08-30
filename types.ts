@@ -16,6 +16,14 @@ export interface User {
   postIds?: string[];
   createdAt?: string;
   updatedAt?: string;
+  plan?: {
+    code: string;
+    name: string;
+    interval: string;
+    amount: number;
+    startAt: string;
+    endAt: string;
+  };
 }
 
 export interface Site {
