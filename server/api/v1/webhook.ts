@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
   const { event: eventType, data } = body;
   console.log(body);
 
-  if (eventType !== "charge.success" || data.status !== "success") {
+  if (data.status !== "success") {
     console.log(eventType, data.status);
 
     throw createError({
