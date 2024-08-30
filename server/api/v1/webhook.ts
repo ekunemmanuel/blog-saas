@@ -71,7 +71,7 @@ export default defineEventHandler(async (event) => {
 
     await userRef.update({
       status: "paid",
-      updatedAt: formatDate(Timestamp.now().toDate()),
+      updatedAt: formatDate(new Date()),
       plan,
       customerCode: data.customer.customer_code,
     });
