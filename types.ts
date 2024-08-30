@@ -16,6 +16,7 @@ export interface User {
   postIds?: string[];
   createdAt?: string;
   updatedAt?: string;
+  customerCode?: string;
   plan?: {
     code: string;
     name: string;

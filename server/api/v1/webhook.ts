@@ -96,6 +96,9 @@ export default defineEventHandler(async (event) => {
 function calculateEndDate(interval: string, startDate: Date): Date {
   const endDate = new Date(startDate);
   switch (interval) {
+    case "hourly":
+      endDate.setHours(endDate.getHours() + 1);
+      break;
     case "daily":
       endDate.setDate(endDate.getDate() + 1);
       break;
@@ -105,14 +108,23 @@ function calculateEndDate(interval: string, startDate: Date): Date {
     case "monthly":
       endDate.setMonth(endDate.getMonth() + 1);
       break;
+    case "quarterly":
+      endDate.setMonth(endDate.getMonth() + 3);
+      break;
+    case "biannually":
+      endDate.setMonth(endDate.getMonth() + 6);
+      break;
+    case "annually":
     case "yearly":
       endDate.setFullYear(endDate.getFullYear() + 1);
       break;
     default:
-      throw new Error(`Unknown interval: ${interval}`);
+      // throw new Error(`Unknown interval: ${interval}`);
+      break;
   }
   return endDate;
 }
+
 function formatDate(date: Date): string {
   return new Intl.DateTimeFormat("en-US", {
     timeStyle: "medium",

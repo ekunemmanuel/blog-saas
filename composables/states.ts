@@ -35,7 +35,7 @@ export const usePlans = () =>
           "Custom Domain Support",
         ],
         label: "Choose Pro",
-        plan: "PLN_30smi5qdmbedr8a", // identifier for the plan
+        plan: "PLN_8btpnsiyj8e5p1o", // identifier for the plan
       },
       {
         type: "Enterprise",
