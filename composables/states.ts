@@ -22,7 +22,7 @@ export const usePlans = () =>
           "Email Support",
         ],
         label: "Choose Basic",
-        plan: "PLN_30smi5qdmbedr8a", // identifier for the plan
+        plan: "PLN_dk820xd9h488vf9", // identifier for the plan
       },
       {
         type: "Pro",
@@ -35,7 +35,7 @@ export const usePlans = () =>
           "Custom Domain Support",
         ],
         label: "Choose Pro",
-        plan: "PLN_8btpnsiyj8e5p1o", // identifier for the plan
+        plan: "PLN_dk820xd9h488vf9", // identifier for the plan
       },
       {
         type: "Enterprise",
@@ -48,7 +48,7 @@ export const usePlans = () =>
           "24/7 Support",
         ],
         label: "Choose Enterprise",
-        plan: "PLN_30smi5qdmbedr8a", // identifier for the plan
+        plan: "PLN_dk820xd9h488vf9", // identifier for the plan
       },
     ];
     return plans;
