@@ -125,9 +125,3 @@ function calculateEndDate(interval: string, startDate: Date): Date {
   return endDate;
 }
 
-function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat("en-US", {
-    timeStyle: "medium",
-    dateStyle: "medium",
-  }).format(date);
-}

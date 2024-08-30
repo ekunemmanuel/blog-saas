@@ -26,51 +26,8 @@ import {
 export const useDb = () => {
   const db = useFirestore();
   const loading = useLoading();
-  const notification = useNotification();
 
-  function buildQueryConstraints(config: QueryConfig): QueryConstraint[] {
-    const constraints: QueryConstraint[] = [];
 
-    if (config.where) {
-      config.where.forEach((condition) => {
-        constraints.push(
-          where(condition.fieldPath, condition.opStr, condition.value)
-        );
-      });
-    }
-
-    if (config.orderBy) {
-      config.orderBy.forEach((order) => {
-        constraints.push(orderBy(order.fieldPath, order.directionStr));
-      });
-    }
-
-    if (config.limit) {
-      constraints.push(limit(config.limit));
-    }
-
-    if (config.startAfter) {
-      constraints.push(startAfter(config.startAfter));
-    }
-
-    if (config.startAt) {
-      constraints.push(startAt(config.startAt));
-    }
-
-    if (config.limitToLast) {
-      constraints.push(limitToLast(config.limitToLast));
-    }
-
-    if (config.endBefore) {
-      constraints.push(endBefore(config.endBefore));
-    }
-
-    if (config.endAt) {
-      constraints.push(endAt(config.endAt));
-    }
-
-    return constraints;
-  }
 
   function getDocs<T>({
     collectionName,
@@ -124,7 +81,7 @@ export const useDb = () => {
     data: any;
     id?: string;
   }) {
-    const date = currentDate();
+    const date = formatDate(Timestamp.now().toDate());
 
     const newData = {
       ...data,
@@ -145,18 +102,7 @@ export const useDb = () => {
           data: doc.id,
         };
       }
-
-      // notification.success({
-      //   description: "Document created successfully",
-      //   id: "create-doc",
-      //   title: "Success",
-      // });
     } catch (error) {
-      // notification.error({
-      //   description: "An error occurred while creating the document",
-      //   id: "create-doc",
-      //   title: "Error",
-      // });
       return {
         error: error as any,
       };
@@ -181,29 +127,11 @@ export const useDb = () => {
       remove?: any[];
     }[];
   }) {
-    //TODO  // Check if another document with the same email exists
-    // const { data: existingDocs } = getDocs({
-    //   collectionName,
-    //   queryConfig: {
-    //     where: [
-    //       { fieldPath: "email", opStr: "==", value: data.email },
-    //       { fieldPath: "id", opStr: "!=", value: id },
-    //     ],
-    //   },
-    // });
-
-    // if (existingDocs.value.length > 0) {
-    //   notification.error({
-    //     description: "A document with this email already exists.",
-    //     id: "duplicate-doc",
-    //     title: "Error",
-    //   });
-    //   return;
-    // }
+   
     const docRef = doc(collection(db, collectionName), id);
     try {
       loading.value = true;
-      const date = currentDate();
+      const date = formatDate(Timestamp.now().toDate());
       const updateData: any = { ...data, updatedAt: date };
       // General update
       await setDoc(docRef, updateData, { merge: true });
@@ -223,17 +151,7 @@ export const useDb = () => {
         await updateDoc(docRef, updateData);
       }
 
-      // notification.success({
-      //   description: "Document updated successfully",
-      //   id: "update-doc",
-      //   title: "Success",
-      // });
     } catch (error) {
-      // notification.error({
-      //   description: "An error occurred while updating document",
-      //   id: "update-doc",
-      //   title: "Error",
-      // });
     } finally {
       loading.value = false;
     }
@@ -251,17 +169,7 @@ export const useDb = () => {
     try {
       loading.value = true;
       await deleteDoc(docRef);
-      // notification.success({
-      //   description: "Document deleted successfully",
-      //   id: "delete-doc",
-      //   title: "Success",
-      // });
     } catch (error) {
-      // notification.error({
-      //   description: "An error occurred while deleting document",
-      //   id: "delete-doc",
-      //   title: "Error",
-      // });
     } finally {
       loading.value = false;
     }
@@ -343,9 +251,46 @@ interface QueryConfig {
   endAt?: any;
 }
 
-function currentDate() {
-  return new Intl.DateTimeFormat("en-US", {
-    timeStyle: "medium",
-    dateStyle: "medium",
-  }).format(Timestamp.now().toDate());
+function buildQueryConstraints(config: QueryConfig): QueryConstraint[] {
+  const constraints: QueryConstraint[] = [];
+
+  if (config.where) {
+    config.where.forEach((condition) => {
+      constraints.push(
+        where(condition.fieldPath, condition.opStr, condition.value)
+      );
+    });
+  }
+
+  if (config.orderBy) {
+    config.orderBy.forEach((order) => {
+      constraints.push(orderBy(order.fieldPath, order.directionStr));
+    });
+  }
+
+  if (config.limit) {
+    constraints.push(limit(config.limit));
+  }
+
+  if (config.startAfter) {
+    constraints.push(startAfter(config.startAfter));
+  }
+
+  if (config.startAt) {
+    constraints.push(startAt(config.startAt));
+  }
+
+  if (config.limitToLast) {
+    constraints.push(limitToLast(config.limitToLast));
+  }
+
+  if (config.endBefore) {
+    constraints.push(endBefore(config.endBefore));
+  }
+
+  if (config.endAt) {
+    constraints.push(endAt(config.endAt));
+  }
+
+  return constraints;
 }
