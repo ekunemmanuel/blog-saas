@@ -27,7 +27,7 @@
         block
         class="mt-4"
         :label="billing.label"
-        :loading="loading"
+        :loading="loadingPlan === billing.plan"
         :disabled="loading"
       />
     </div>
@@ -47,8 +47,10 @@ const props = defineProps<{
 }>();
 const user = useCurrentUser();
 const notification = useNotification();
-const loading = useLoading();
+const loadingPlan = ref<string | null>(null);
 const i = ref(0);
+const loading = useLoading();
+
 async function makePayment(plan: string, type: string) {
   console.log(plan, type);
 
@@ -70,8 +72,8 @@ async function makePayment(plan: string, type: string) {
     return;
   }
   try {
+    loadingPlan.value = plan;
     loading.value = true;
-
     // Call the payment API
     const { data } = await $fetch("/api/v1/payment", {
       method: "POST",
@@ -98,6 +100,7 @@ async function makePayment(plan: string, type: string) {
       description: "An error occurred while processing your payment.",
     });
   } finally {
+    loadingPlan.value = null;
     loading.value = false;
   }
 }

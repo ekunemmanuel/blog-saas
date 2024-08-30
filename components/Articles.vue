@@ -72,7 +72,11 @@
                 {{ row.status ? "Published" : "Draft" }}
               </UBadge>
             </template>
-
+            <template #title-data="{ row }">
+              <p class="truncate  max-w-[250px]">
+                {{ row.title }}
+              </p>
+            </template>
             <template #actions-data="{ row }">
               <UDropdown :items="items(row)">
                 <UButton

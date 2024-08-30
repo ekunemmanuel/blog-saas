@@ -169,11 +169,14 @@ const checkSlug = async (slug: string) => {
       },
     });
 
+    if (querySnapshot.length === 0) {
+      return true; // Return true if unique
+    }
+
     const post = querySnapshot[0];
     if (post.id === postId.value) {
       return true;
     }
-    return querySnapshot.length === 0; // Return true if unique
   } catch (error) {
     console.error("Error checking slug:", error);
     return false; // Return false if error
