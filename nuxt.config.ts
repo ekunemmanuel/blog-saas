@@ -1,10 +1,11 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   devtools: { enabled: true },
-  modules: ["@nuxt/ui", "nuxt-vuefire"],
+  modules: ["@nuxt/ui", "nuxt-vuefire", "@vueuse/nuxt", "@nuxt/image"],
 
   runtimeConfig: {
     credential: JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS || "{}"),
+    paystackSeceretKey: process.env.PAYSTACK_SECRET_KEY,
   },
 
   vuefire: {
@@ -19,6 +20,10 @@ export default defineNuxtConfig({
       appId: process.env.appId,
       storageBucket: process.env.storageBucket,
     },
+  },
+
+  imports: {
+    dirs: ["./composables/firebase"],
   },
 
   compatibilityDate: "2024-08-27",

@@ -1,24 +1,26 @@
 <template>
-  <UContainer>
-    <ColorMode />
-    <UCard class="mt-10">
-      <template #header>
-        <div class="flex justify-between">
-          <h1>Welcome to Nuxt UI Starter</h1>
-          <ColorScheme
-            ><USelect
-              v-model="$colorMode.preference"
-              :options="['system', 'light', 'dark']"
-          /></ColorScheme>
-        </div>
-      </template>
-      <UButton
-        icon="i-heroicons-book-open"
-        to="https://ui.nuxt.com"
-        target="_blank"
-        >Open Nuxt UI Documentation</UButton
-      >
+  <NuxtLoadingIndicator />
+  <NuxtLayout>
+    <NuxtPage />
+  </NuxtLayout>
+  <UModal v-model="loading" :prevent-close="loading" />
+  <!-- <UModal v-model="isOnline" :prevent-close="isOnline">
+    <UCard>
+      <p class="text-center">
+        You are <span class="text-primary"> Offline </span>, make you are
+        connected to a network
+      </p>
     </UCard>
-  </UContainer>
+  </UModal> -->
+  <UNotifications />
 </template>
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+const loading = useLoading();
+const online = useOnline();
+const isOnline = computed(() => !online.value);
+</script>
+<style>
+.firebase-emulator-warning {
+  display: none;
+}
+</style>
