@@ -1,9 +1,9 @@
 import { defineEventHandler, readBody, createError } from "h3";
 import { getFirestore, Timestamp } from "firebase-admin/firestore";
 import { createHmac } from "crypto";
+import { User } from "~/types";
 export default defineEventHandler(async (event) => {
   const body = await readBody(event);
-  //   const secret = process.env.PAYSTACK_SECRET_KEY as string;
   const { paystackSeceretKey } = useRuntimeConfig();
   const hash = createHmac("sha512", paystackSeceretKey)
     .update(JSON.stringify(body))
@@ -58,20 +58,23 @@ export default defineEventHandler(async (event) => {
         message: `User with ID ${userId} does not exist`,
       });
     }
+    const user = userDoc.data() as User;
 
-    const user = userDoc.data();
-
-    if (user && user.status === "paid") {
-      return {
-        status: "info",
-        message: "User has already paid",
-        data: user,
-      };
+    // Check if the plan is still valid if it exists
+    if (user.plan && isPlanValid(user.plan.startAt, user.plan.endAt)) {
+      throw createError({
+        statusCode: 400,
+        message: "The current subscription is still valid",
+        data: {
+          message:
+            "The current subscription is still valid until " + user.plan.endAt,
+        },
+      });
     }
 
+
     await userRef.update({
-      status: "paid",
-      updatedAt: formatDate(new Date()),
+      updatedAt: formatDate(Timestamp.now().toDate()),
       plan,
       customerCode: data.customer.customer_code,
     });

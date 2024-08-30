@@ -1,4 +1,6 @@
+import { getFirestore } from "firebase-admin/firestore";
 import { z } from "zod";
+import { User } from "~/types";
 
 const objectSchema = z.object({
   email: z.string().email(),
@@ -25,8 +27,36 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-
   try {
+    const db = getFirestore();
+    const userId = data.userId;
+    const userRef = db.collection("users").doc(userId);
+    const userDoc = await userRef.get();
+
+    if (!userDoc.exists) {
+      throw createError({
+        statusCode: 404,
+        message: `User with ID ${userId} does not exist`,
+        data: {
+          message: "User with ID does not exist",
+        },
+      });
+    }
+
+    // const user = userDoc.data() as User;
+
+    // // Check if the plan is still valid if it exists
+    // if (user.plan && isPlanValid(user.plan.startAt, user.plan.endAt)) {
+    //   throw createError({
+    //     statusCode: 400,
+    //     message: "The current subscription is still valid",
+    //     data: {
+    //       message:
+    //         "The current subscription is still valid until " + user.plan.endAt,
+    //     },
+    //   });
+    // }
+
     const { paystackSeceretKey } = useRuntimeConfig();
 
     const { data: result } = await $fetch<{
@@ -43,7 +73,7 @@ export default defineEventHandler(async (event) => {
         amount: 1000,
         metadata: {
           plan: data.plan,
-          userId: data.userId,
+          userId,
         },
       },
     });
