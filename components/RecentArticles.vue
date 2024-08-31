@@ -63,7 +63,7 @@ const { data: articles, pending } = getDocs<Post>({
     orderBy: [
       {
         fieldPath: "createdAt",
-        directionStr: "desc",
+        directionStr: "asc",
       },
     ],
     limit: 6,

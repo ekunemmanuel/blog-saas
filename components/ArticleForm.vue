@@ -326,13 +326,15 @@ const handleFileChange = async (fileList: FileList) => {
     });
 
     state.value.coverImage = url.value!;
-    await modifyDoc({
-      collectionName: "posts",
-      id: postId.value!,
-      data: {
-        coverImage: state.value.coverImage,
-      },
-    });
+    if (postId.value) {
+      await modifyDoc({
+        collectionName: "posts",
+        id: postId.value,
+        data: {
+          coverImage: state.value.coverImage,
+        },
+      });
+    }
   }
 };
 watch(state.value, (val) => {
@@ -342,14 +344,16 @@ watch(state.value, (val) => {
 
 watch(imageId, async (newVal, oldVal) => {
   if (oldVal != undefined) {
-    await modifyDoc({
-      collectionName: "posts",
-      id: postId.value!,
-      data: {
-        imageId: newVal,
-        coverImage: state.value.coverImage,
-      },
-    });
+    if (postId) {
+      await modifyDoc({
+        collectionName: "posts",
+        id: postId.value!,
+        data: {
+          imageId: newVal,
+          coverImage: state.value.coverImage,
+        },
+      });
+    }
     await deleteFile({
       path: `${oldVal}`,
     });

@@ -18,6 +18,7 @@
 const loading = useLoading();
 const online = useOnline();
 const isOnline = computed(() => !online.value);
+
 </script>
 <style>
 .firebase-emulator-warning {

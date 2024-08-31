@@ -1,26 +1,5 @@
 <template>
   <div>
-    <UContainer class="p-4">
-      <div class="flex justify-end gap-2">
-        <UButton
-          icon="heroicons:document-text"
-          variant="ghost"
-          label="View Blog"
-          :to="`/blogs/${subdirectory}`"
-        />
-        <UButton
-          variant="ghost"
-          label="Settings"
-          icon="heroicons:cog"
-          :to="`/dashboard/sites/${siteId}/settings`"
-        />
-        <UButton
-          :to="`/dashboard/sites/${siteId}/new`"
-          label="Create Article"
-          icon="heroicons:plus-circle"
-        />
-      </div>
-    </UContainer>
     <div v-if="posts.length === 0">
       <div
         class="grid place-items-center min-h-[calc(100vh-128px)] md:min-h-[calc(100vh-64px)] px-4"
@@ -131,53 +110,22 @@
 </template>
 
 <script lang="ts" setup>
-import type { Post, Site } from "~/types";
+import type { Post } from "~/types";
 
 const { getDocs, fetchDoc, deleteFile, removeDoc, modifyDoc } = useFirebase();
-const user = useCurrentUser();
 const isOpen = ref(false);
 const loading = useLoading();
-const route = useRoute();
 const notification = useNotification();
-const { deletePost } = useGeneral();
-if (!user.value) {
-  navigateTo({
-    name: "login",
-    query: { redirect: route.fullPath },
-  });
-}
 const props = defineProps<{
   siteId: string;
+  userId: string;
 }>();
-
-const { data: site } = await fetchDoc({
-  collectionName: "sites",
-  id: props.siteId,
-});
-
-const { data: userData } = await fetchDoc({
-  collectionName: "users",
-  id: user.value?.uid!,
-});
-
-if (!site?.exists() || !userData?.exists()) {
-  notification.error({
-    id: "not-found",
-    title: "Not Found",
-    description: "The site you are looking for does not exist.",
-  });
-  navigateTo({
-    path: "/dashboard/sites",
-  });
-}
-const siteData = site?.data() as Site;
-const subdirectory = siteData?.subdirectory;
 
 const { data: posts } = getDocs<Post>({
   collectionName: "posts",
   queryConfig: {
     where: [
-      { fieldPath: "userId", opStr: "==", value: user.value?.uid },
+      { fieldPath: "userId", opStr: "==", value: props.userId },
       {
         fieldPath: "siteId",
         opStr: "==",
@@ -254,81 +202,81 @@ const items = (row: Post) => [
   ],
 ];
 
-// async function deletePost(id: string) {
-//   try {
-//     loading.value = true;
-//     const post = await fetchPost(id);
-//     if (post) {
-//       await deletePostImage(post.imageId);
-//       await updateSitePostIds(id);
-//       await updateUserPostIds(id);
-//       await removePost(id);
+async function deletePost(id: string) {
+  try {
+    loading.value = true;
+    const post = await fetchPost(id);
+    if (post) {
+      await deletePostImage(post.imageId);
+      await updateSitePostIds(id);
+      await updateUserPostIds(id);
+      await removePost(id);
 
-//       notification.success({
-//         id: "success",
-//         title: "Success",
-//         description: "Article deleted successfully",
-//       });
-//     }
-//   } catch (error: any) {
-//     console.error(error);
-//     notification.error({
-//       id: "error",
-//       title: "Error",
-//       description: error.message,
-//     });
-//   } finally {
-//     loading.value = false;
-//     isOpen.value = false;
-//   }
-// }
+      notification.success({
+        id: "success",
+        title: "Success",
+        description: "Article deleted successfully",
+      });
+    }
+  } catch (error: any) {
+    console.error(error);
+    notification.error({
+      id: "error",
+      title: "Error",
+      description: error.message,
+    });
+  } finally {
+    loading.value = false;
+    isOpen.value = false;
+  }
+}
 
-// async function fetchPost(id: string): Promise<Post | null> {
-//   const { data: post } = await fetchDoc({
-//     collectionName: "posts",
-//     id,
-//   });
-//   return post?.exists() ? (post.data() as Post) : null;
-// }
+async function fetchPost(id: string): Promise<Post | null> {
+  const { data: post } = await fetchDoc({
+    collectionName: "posts",
+    id,
+  });
+  return post?.exists() ? (post.data() as Post) : null;
+}
 
-// async function deletePostImage(imageId: string | undefined) {
-//   if (imageId) {
-//     await deleteFile({ path: `${imageId}` });
-//   }
-// }
+async function deletePostImage(imageId: string | undefined) {
+  if (imageId) {
+    await deleteFile({ path: `${imageId}` });
+  }
+}
 
-// async function updateSitePostIds(postId: string) {
-//   await modifyDoc({
-//     collectionName: "sites",
-//     id: props.siteId,
-//     arrayOperations: [
-//       {
-//         field: "postIds",
-//         remove: [postId],
-//       },
-//     ],
-//   });
-// }
+async function updateSitePostIds(postId: string) {
+  await modifyDoc({
+    collectionName: "sites",
+    id: props.siteId,
+    arrayOperations: [
+      {
+        field: "postIds",
+        remove: [postId],
+      },
+    ],
+  });
+}
 
-// async function updateUserPostIds(postId: string) {
-//   await modifyDoc({
-//     collectionName: "users",
-//     id: user.value?.uid!,
-//     arrayOperations: [
-//       {
-//         field: "postIds",
-//         remove: [postId],
-//       },
-//     ],
-//   });
-// }
+async function updateUserPostIds(postId: string) {
+  await modifyDoc({
+    collectionName: "users",
+    id: props.userId,
+    arrayOperations: [
+      {
+        field: "postIds",
+        remove: [postId],
+      },
+    ],
+  });
+}
 
-// async function removePost(id: string) {
-//   await removeDoc({
-//     collectionName: "posts",
-//     id,
-//   });
-// }
+async function removePost(id: string) {
+  await removeDoc({
+    collectionName: "posts",
+    id,
+  });
+}
 
 function cancel() {
   isOpen.value = false;

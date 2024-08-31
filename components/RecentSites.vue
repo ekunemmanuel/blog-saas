@@ -56,7 +56,7 @@ const { data: sites, pending } = getDocs<Site>({
     orderBy: [
       {
         fieldPath: "createdAt",
-        directionStr: "desc",
+        directionStr: "asc",
       },
     ],
     limit: 6,
