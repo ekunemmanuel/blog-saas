@@ -158,7 +158,10 @@ async function deleteUserRelatedData(userData: User) {
   const siteIds = userData.siteIds || [];
   const postIds = userData.postIds || [];
 
-  await Promise.all([...siteIds.map(deleteSite), ...postIds.map(deletePost)]);
+  await Promise.allSettled([
+    ...siteIds.map(deleteSite),
+    ...postIds.map(deletePost),
+  ]);
 }
 
 async function removeUser(userId: string) {
@@ -191,7 +194,7 @@ async function getSiteData(id: string): Promise<Site | null> {
 
 async function deleteSiteRelatedData(siteData: Site) {
   const postIds = siteData.postIds || [];
-  await Promise.all([
+  await Promise.allSettled([
     ...postIds.map(deletePost),
     deleteFile({ path: `${siteData.imageId}` }),
   ]);
