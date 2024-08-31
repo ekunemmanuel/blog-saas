@@ -57,8 +57,7 @@ export default defineEventHandler(async (event) => {
     //   });
     // }
 
-    const { paystackSeceretKey } = useRuntimeConfig();
-    console.log(paystackSeceretKey);
+    const { paystackSecretKey } = useRuntimeConfig();
     
 
     const { data: result } = await $fetch<{
@@ -66,7 +65,7 @@ export default defineEventHandler(async (event) => {
     }>("https://api.paystack.co/transaction/initialize", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${paystackSeceretKey}`,
+        Authorization: `Bearer ${paystackSecretKey}`,
         "Content-Type": "application/json",
       },
       body: {
