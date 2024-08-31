@@ -49,7 +49,7 @@
           Danger
         </h3>
         <p class="text-gray-900 dark:text-gray-200 mt-1">
-          Are you sure you want to delete this article? This action cannot be
+          Are you sure you want to delete your Account? This action cannot be
           undone.
         </p>
         <div class="flex justify-end gap-2">
