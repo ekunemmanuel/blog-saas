@@ -5,7 +5,7 @@ import {
   updateProfile,
   deleteUser,
   type AuthError,
-  type UserCredential,
+  type User as FirebaseUser,
 } from "firebase/auth";
 import type { Login, SignUp, User } from "~/types";
 export const useAuthentication = () => {
@@ -83,33 +83,43 @@ export const useAuthentication = () => {
     }
   }
 
-  async function deleteAccount(userCredentials: UserCredential) {
+  // async function deleteAccount(user: FirebaseUser) {
+  //   try {
+  //     loading.value = true;
+  //     if (!auth) {
+  //       throw new Error("Auth not initialised");
+  //     }
+  //     await deleteUser(user);
+
+  //     navigateTo({
+  //       path: "/login",
+  //       query: {
+  //         redirect: route.fullPath,
+  //       },
+  //     });
+  //   } catch (e) {
+  //     console.error(e);
+  //     const error = e as AuthError;
+  //     console.error(error);
+
+  //     loading.value = false;
+  //   }
+  // }
+
+  async function deleteAccount(user: FirebaseUser) {
     try {
       loading.value = true;
-      if (!auth) {
-        throw new Error("Auth not initialised");
-      }
-      await deleteUser(userCredentials.user);
-      notification.success({
-        id: "delete",
-        description: "User deleted successfully",
-        title: "Success",
-      });
+
+      if (!auth) throw new Error("Auth not initialized");
+
+      await deleteUser(user);
+
       navigateTo({
         path: "/login",
-        query: {
-          redirect: route.fullPath,
-        },
+        query: { redirect: route.fullPath },
       });
-    } catch (e) {
-      console.error(e);
-      const error = e as AuthError;
+    } catch (error) {
       console.error(error);
-      notification.error({
-        id: error.code,
-        description: error.message,
-        title: error.name,
-      });
       loading.value = false;
     }
   }
@@ -147,5 +157,6 @@ export const useAuthentication = () => {
     signIn,
     signUp,
     logOut,
+    deleteAccount,
   };
 };

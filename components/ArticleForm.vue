@@ -311,7 +311,7 @@ const handleFileChange = async (fileList: FileList) => {
     uploading.value = true;
     const { url, uploadError } = await uploadFile({
       file: files[0],
-      path: `sites/${props.siteId}/posts/${imageId.value}`,
+      path: `${imageId.value}`,
     });
     uploading.value = false;
     if (uploadError.value) {
@@ -351,7 +351,7 @@ watch(imageId, async (newVal, oldVal) => {
       },
     });
     await deleteFile({
-      path: `sites/${props.siteId}/posts/${oldVal}`,
+      path: `${oldVal}`,
     });
   }
 });

@@ -1,15 +1,18 @@
-import { defineEventHandler, readBody, createError } from "h3";
 import { getFirestore, Timestamp } from "firebase-admin/firestore";
 import { createHmac } from "crypto";
 import { User } from "~/types";
+import { getAuth } from "firebase-admin/auth";
+
 export default defineEventHandler(async (event) => {
-  const body = await readBody(event);
-  const { paystackSeceretKey } = useRuntimeConfig();
-  const hash = createHmac("sha512", paystackSeceretKey)
+  const body = await readBody<PaystackWebhookData>(event);
+  const { paystackSecretKey } = useRuntimeConfig();
+
+  // Verify Paystack signature
+  const hash = createHmac("sha512", paystackSecretKey)
     .update(JSON.stringify(body))
     .digest("hex");
 
-  if (hash != getHeader(event, "x-paystack-signature")) {
+  if (hash !== getHeader(event, "x-paystack-signature")) {
     throw createError({
       statusCode: 400,
       message: "Invalid signature",
@@ -17,75 +20,38 @@ export default defineEventHandler(async (event) => {
   }
 
   const { event: eventType, data } = body;
-  console.log(body);
 
   if (data.status !== "success") {
-    console.log(eventType, data.status);
-
+    console.log({ event: eventType, data });
     throw createError({
       statusCode: 400,
       message: "Invalid event type or status",
     });
   }
 
-  const userId = data.metadata?.userId;
-  const plan = {
-    code: data.plan.plan_code,
-    name: data.plan.name,
-    interval: data.plan.interval,
-    amount: data.plan.amount,
-    startAt: formatDate(new Date(data.paid_at)),
-    endAt: formatDate(
-      calculateEndDate(data.plan.interval, new Date(data.paid_at))
-    ),
-  };
-
-  if (!userId) {
-    throw createError({
-      statusCode: 400,
-      message: "User ID is missing in the metadata",
-    });
-  }
-
   try {
-    const db = getFirestore();
-    const userRef = db.collection("users").doc(userId);
-    const userDoc = await userRef.get();
+    const ref =
+      eventType === "charge.success"
+        ? data.reference
+        : data.transaction.reference;
+    const { data: verifiedData } = await verifyPayment(ref);
 
-    if (!userDoc.exists) {
-      throw createError({
-        statusCode: 404,
-        message: `User with ID ${userId} does not exist`,
-      });
-    }
-    const user = userDoc.data() as User;
-
-    // Check if the plan is still valid if it exists
-    if (user.plan && isPlanValid(user.plan.startAt, user.plan.endAt)) {
+    if (verifiedData.status !== "success") {
       throw createError({
         statusCode: 400,
-        message: "The current subscription is still valid",
-        data: {
-          message:
-            "The current subscription is still valid until " + user.plan.endAt,
-        },
+        message: "Payment verification failed",
       });
     }
 
+    const user = await getUserByEmail(verifiedData.customer.email);
+    const userId = user.uid;
+    const plan = createPlanObject(
+      verifiedData.plan_object,
+      verifiedData.paid_at
+    );
 
-    await userRef.update({
-      updatedAt: formatDate(Timestamp.now().toDate()),
-      plan,
-      customerCode: data.customer.customer_code,
-    });
-
-    const r = {
-      status: "success",
-      message: "Payment verified and order status updated to paid",
-      data,
-    };
-    console.log(r);
-  } catch (error: any) {
+    await updateUserData(userId, plan as Partial<User>);
+  } catch (error) {
     console.error(error);
     throw createError({
       statusCode: 500,
@@ -94,6 +60,21 @@ export default defineEventHandler(async (event) => {
     });
   }
 });
+
+// Function to create a plan object with start and end dates
+function createPlanObject(
+  planObject: PaystackWebhookVerification["data"]["plan_object"],
+  paidAt: string
+) {
+  return {
+    code: planObject.plan_code,
+    name: planObject.name,
+    interval: planObject.interval,
+    amount: planObject.amount,
+    startAt: formatDate(new Date(paidAt)),
+    endAt: formatDate(calculateEndDate(planObject.interval, new Date(paidAt))),
+  };
+}
 
 // Function to calculate the end date based on the interval
 function calculateEndDate(interval: string, startDate: Date): Date {
@@ -121,10 +102,115 @@ function calculateEndDate(interval: string, startDate: Date): Date {
     case "yearly":
       endDate.setFullYear(endDate.getFullYear() + 1);
       break;
-    default:
-      // throw new Error(`Unknown interval: ${interval}`);
-      break;
   }
   return endDate;
 }
 
+// Function to verify payment using Paystack API
+async function verifyPayment(reference: string) {
+  const { paystackSecretKey } = useRuntimeConfig();
+  try {
+    const response = await $fetch<PaystackWebhookVerification>(
+      `https://api.paystack.co/transaction/verify/${reference}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${paystackSecretKey}`,
+        },
+      }
+    );
+    return response;
+  } catch (error) {
+    throw createError({
+      statusCode: 500,
+      message: "An error occurred during payment verification",
+      data: error,
+    });
+  }
+}
+
+// Function to get a user by their email
+async function getUserByEmail(email: string) {
+  const auth = getAuth();
+  try {
+    return await auth.getUserByEmail(email);
+  } catch (error) {
+    throw createError({
+      statusCode: 404,
+      message: "User not found by email",
+      data: error,
+    });
+  }
+}
+
+// Function to update user data in Firestore
+async function updateUserData(userId: string, params: Partial<User>) {
+  const db = getFirestore();
+  const userRef = db.collection("users").doc(userId);
+
+  try {
+    const userDoc = await userRef.get();
+    if (!userDoc.exists) {
+      throw createError({
+        statusCode: 404,
+        message: `User with ID ${userId} does not exist`,
+      });
+    }
+
+    await userRef.update({
+      ...params,
+      updatedAt: formatDate(Timestamp.now().toDate()),
+    });
+  } catch (error) {
+    throw createError({
+      statusCode: 404,
+      message: "User not found by ID",
+      data: error,
+    });
+  }
+}
+
+interface PaystackWebhookVerification {
+  event: "invoice.create" | "charge.success";
+  data: {
+    status: "success";
+    reference: string; // This is the reference for the transaction for charge.success event
+    amount: number;
+    paid_at: string;
+    authorization: {
+      authorization_code: string;
+      signature: string;
+    };
+    customer: {
+      email: string;
+      customer_code: string;
+    };
+    plan: string;
+    transaction: {
+      // This is only available for invoice.create event
+      reference: string; // This is the reference for the transaction
+    }; // This is only available for invoice.create event
+    plan_object: {
+      id: number;
+      name: string;
+      plan_code: string;
+      description: string;
+      amount: number;
+      interval: string;
+    };
+  };
+}
+
+interface PaystackWebhookData {
+  event: string;
+  data: {
+    status: string;
+    reference: string;
+    transaction: {
+      reference: string;
+      status: string;
+      amount: number;
+      currency: string;
+    };
+  };
+}

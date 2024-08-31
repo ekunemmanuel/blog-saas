@@ -264,7 +264,7 @@ async function deletePost(id: string) {
     if (post?.exists()) {
       const data = post.data() as Post;
       await deleteFile({
-        path: `sites/${props.siteId}/posts/${data.imageId}`,
+        path: `${data.imageId}`,
       });
       await modifyDoc({
         collectionName: "sites",

@@ -197,7 +197,7 @@ async function handleFileChange(file: File) {
   imageId.value = v4();
   const { url, uploadError } = await uploadFile({
     file,
-    path: `sites/${props.siteId}/${imageId.value}`,
+    path: `${imageId.value}`,
   });
   uploading.value = false;
 
@@ -231,7 +231,7 @@ async function handleFileChange(file: File) {
 
 watch(imageId, async (newVal, oldVal) => {
   if (oldVal) {
-    await deleteFile({ path: `sites/${props.siteId}/${oldVal}` });
+    await deleteFile({ path: `${oldVal}` });
   }
 });
 
@@ -256,7 +256,7 @@ async function deleteSite(id: string) {
           const postData = post.data() as Post;
           if (postData.imageId) {
             await deleteFile({
-              path: `sites/${props.siteId}/posts/${postData.imageId}`,
+              path: `${postData.imageId}`,
             });
           }
           await removeDoc({ collectionName: "posts", id: postId });
@@ -264,7 +264,7 @@ async function deleteSite(id: string) {
       }
       // delete site image
       if (data.imageId) {
-        await deleteFile({ path: `sites/${props.siteId}/${data.imageId}` });
+        await deleteFile({ path: `${data.imageId}` });
       }
 
       // remove site from user's siteIds and postIds
