@@ -1,3 +1,5 @@
+
+
 import { getFirestore, Timestamp } from "firebase-admin/firestore";
 import { createHmac } from "crypto";
 import { User } from "~/types";
@@ -20,11 +22,14 @@ export default defineEventHandler(async (event) => {
   }
 
   const { event: eventType, data } = body;
+  console.log(body);
 
   if (data.status !== "success") {
-    console.log({ eventtype: eventType, data });
-
-    return;
+    console.log({ event: eventType, data });
+    throw createError({
+      statusCode: 400,
+      message: "Invalid event type or status",
+    });
   }
 
   try {
@@ -35,11 +40,10 @@ export default defineEventHandler(async (event) => {
     const { data: verifiedData } = await verifyPayment(ref);
 
     if (verifiedData.status !== "success") {
-      console.log({
+      throw createError({
         statusCode: 400,
         message: "Payment verification failed",
       });
-      return;
     }
 
     const user = await getUserByEmail(verifiedData.customer.email);
@@ -51,12 +55,12 @@ export default defineEventHandler(async (event) => {
 
     await updateUserData(userId, plan as Partial<User>);
   } catch (error) {
-    console.log({
+    console.error(error);
+    throw createError({
       statusCode: 500,
       message: "An error occurred during payment verification",
       data: error,
     });
-    return;
   }
 });
 
@@ -108,36 +112,65 @@ function calculateEndDate(interval: string, startDate: Date): Date {
 // Function to verify payment using Paystack API
 async function verifyPayment(reference: string) {
   const { paystackSecretKey } = useRuntimeConfig();
-  const response = await $fetch<PaystackWebhookVerification>(
-    `https://api.paystack.co/transaction/verify/${reference}`,
-    {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${paystackSecretKey}`,
-      },
-    }
-  );
-  return response;
+  try {
+    const response = await $fetch<PaystackWebhookVerification>(
+      `https://api.paystack.co/transaction/verify/${reference}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${paystackSecretKey}`,
+        },
+      }
+    );
+    return response;
+  } catch (error) {
+    throw createError({
+      statusCode: 500,
+      message: "An error occurred during payment verification",
+      data: error,
+    });
+  }
 }
 
 // Function to get a user by their email
 async function getUserByEmail(email: string) {
   const auth = getAuth();
-  return await auth.getUserByEmail(email);
+  try {
+    return await auth.getUserByEmail(email);
+  } catch (error) {
+    throw createError({
+      statusCode: 404,
+      message: "User not found by email",
+      data: error,
+    });
+  }
 }
 
 // Function to update user data in Firestore
 async function updateUserData(userId: string, params: Partial<User>) {
   const db = getFirestore();
   const userRef = db.collection("users").doc(userId);
-  const userDoc = await userRef.get();
-  if (!userDoc.exists) {
-    return;
+
+  try {
+    const userDoc = await userRef.get();
+    if (!userDoc.exists) {
+      throw createError({
+        statusCode: 404,
+        message: `User with ID ${userId} does not exist`,
+      });
+    }
+
+    await userRef.update({
+      ...params,
+      updatedAt: formatDate(Timestamp.now().toDate()),
+    });
+  } catch (error) {
+    throw createError({
+      statusCode: 404,
+      message: "User not found by ID",
+      data: error,
+    });
   }
-  await userRef.update({
-    ...params,
-    updatedAt: formatDate(Timestamp.now().toDate()),
-  });
 }
 
 interface PaystackWebhookVerification {
