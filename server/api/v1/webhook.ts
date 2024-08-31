@@ -20,6 +20,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const { event: eventType, data } = body;
+  console.log(body);
 
   if (data.status !== "success") {
     console.log({ event: eventType, data });
