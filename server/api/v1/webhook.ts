@@ -21,10 +21,10 @@ export default defineEventHandler(async (event) => {
 
   const { event: eventType, data } = body;
 
-  console.log({ body: body });
+  console.log({ body });
 
   if (data.status !== "success") {
-    console.log({ eventtype: eventType, data });
+    console.log({ more: body });
     return;
   }
 
@@ -50,14 +50,21 @@ export default defineEventHandler(async (event) => {
       verifiedData.paid_at
     );
 
-    await updateUserData(userId, plan as Partial<User>);
+    await updateUserData(userId, {
+      plan,
+      customerCode: verifiedData.customer.customer_code,
+    });
   } catch (error) {
     console.log({
       statusCode: 500,
       message: "An error occurred during payment verification",
       data: error,
     });
-    return;
+    throw createError({
+      statusCode: 500,
+      message: "An error occurred during payment verification",
+      data: error,
+    });
   }
 });
 
@@ -109,18 +116,25 @@ function calculateEndDate(interval: string, startDate: Date): Date {
 // Function to verify payment using Paystack API
 async function verifyPayment(reference: string) {
   const { paystackSecretKey } = useRuntimeConfig();
-  const response = await $fetch<PaystackWebhookVerification>(
-    `https://api.paystack.co/transaction/verify/${reference}`,
-    {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${paystackSecretKey}`,
-      },
-    }
-  );
-  console.log({ response });
+  try {
+    const response = await $fetch<PaystackWebhookVerification>(
+      `https://api.paystack.co/transaction/verify/${reference}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${paystackSecretKey}`,
+        },
+      }
+    );
+    console.log({ response });
 
-  return response;
+    return response;
+  } catch (error) {
+    throw createError({
+      status: 400,
+      message: "Error verifying payment",
+    });
+  }
 }
 
 // Function to get a user by their email
