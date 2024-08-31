@@ -5,7 +5,7 @@
         <h2 class="text-2xl font-semibold">{{ data.displayName }}</h2>
         <p><strong>Email:</strong> {{ data.email }}</p>
 
-        <div v-if="data.plan" class="mt-4 p-4 border rounded-lg bg-gray-50">
+        <div v-if="data.plan" class="mt-4 p-4 border rounded-lg bg-gray-500">
           <h3 class="text-xl font-semibold">Plan Details</h3>
           <p><strong>Plan Name:</strong> {{ data.plan.name }}</p>
           <p><strong>Interval:</strong> {{ data.plan.interval }}</p>
@@ -116,95 +116,6 @@ if (error.value) {
   });
   navigateTo("/login");
 }
-
-// async function deleteAccount() {
-//   loading.value = true;
-//   try {
-//     if (user.value) {
-//       const { data } = await fetchDoc({
-//         collectionName: "users",
-//         id: user.value.uid,
-//       });
-//       if (data && data.exists()) {
-//         const user = data.data() as User;
-//         for (const siteId of user.siteIds ?? []) {
-//           await deleteSite(siteId);
-//         }
-//         for (const postId of user.postIds ?? []) {
-//           await deletePost(postId);
-//         }
-
-//         await removeDoc({ collectionName: "users", id: user.id });
-//       }
-
-//       await deleteAccountFirebase(user.value);
-
-//       notification.success({
-//         title: "Success",
-//         description: "Account deleted successfully",
-//         id: "success",
-//       });
-//     }
-//   } catch (error: any) {
-//     notification.error({
-//       title: "Error",
-//       description: error.message,
-//       id: "error",
-//     });
-//   } finally {
-//     loading.value = false;
-//   }
-// }
-
-// // function to delete site
-// async function deleteSite(id: string) {
-//   try {
-//     const { data } = await fetchDoc({ collectionName: "sites", id });
-//     if (data && data.exists()) {
-//       const site = data.data() as Site;
-//       // get all posts and delete them
-//       for (const postId of site.postIds ?? []) {
-//         const { data: post } = await fetchDoc({
-//           collectionName: "posts",
-//           id: postId,
-//         });
-//         if (post && post.exists()) {
-//           await deletePost(post.id);
-//         }
-//       }
-//       await deleteFile({ path: `sites/${site.imageId}` });
-//       await removeDoc({ collectionName: "sites", id: data.id });
-//     }
-//   } catch (error: any) {
-//     notification.error({
-//       title: "Error",
-//       description: error.message,
-//       id: "error",
-//     });
-//   }
-// }
-
-// // function to delete post
-// async function deletePost(id: string) {
-//   try {
-//     const { data } = await fetchDoc({ collectionName: "posts", id });
-//     if (data && data.exists()) {
-//       const post = data.data() as Post;
-//       if (post.imageId) {
-//         await deleteFile({
-//           path: `sites/${post.siteId}/posts/${post.imageId}`,
-//         });
-//       }
-//       await removeDoc({ collectionName: "posts", id: data.id });
-//     }
-//   } catch (error: any) {
-//     notification.error({
-//       title: "Error",
-//       description: error.message,
-//       id: "error",
-//     });
-//   }
-// }
 
 async function deleteAccount() {
   loading.value = true;
