@@ -110,7 +110,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { Post } from "~/types";
+import type { Post,  } from "~/types";
 
 const { getDocs, fetchDoc, deleteFile, removeDoc, modifyDoc } = useFirebase();
 const isOpen = ref(false);
@@ -176,7 +176,24 @@ const items = (row: Post) => [
     {
       label: "View",
       icon: "i-heroicons-eye-20-solid",
-      click: () => console.log("View", row.id),
+      click: async () => {
+        const { data: siteData } = await fetchDoc({
+          collectionName: "sites",
+          id: props.siteId,
+        });
+        if (siteData && siteData.exists()) {
+          const site = siteData.data() as Site;
+          navigateTo({
+            name: "blogs-name-slug",
+            params: {
+              name: site.subdirectory,
+              slug: row.slug,
+            },
+          });
+          return;
+        }
+        navigateTo("/dashboard/sites");
+      },
     },
     {
       label: "Edit",
