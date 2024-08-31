@@ -110,7 +110,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { Post,  } from "~/types";
+import type { Post, Site,  } from "~/types";
 
 const { getDocs, fetchDoc, deleteFile, removeDoc, modifyDoc } = useFirebase();
 const isOpen = ref(false);

@@ -2,7 +2,7 @@
   <div class="py-6 space-y-4">
     <UContainer>
       <div v-if="filteredData">
-        <div class="flex justify-center items-center text-center">
+        <div class="flex justify-center  text-center">
           <Logo />
           <div class="flex-1">
             <h1 class="text-2xl font-bold mb-4">{{ filteredData.name }}</h1>

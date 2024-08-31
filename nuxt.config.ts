@@ -27,8 +27,11 @@ export default defineNuxtConfig({
   },
 
   routeRules: {
-    "/dashboard/profile": {
-      redirect: "/404",
+    // "/dashboard/profile": {
+    //   redirect: "/404",
+    // },
+    "/blogs": {
+      redirect: "/",
     },
   },
 

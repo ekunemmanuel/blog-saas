@@ -1,27 +1,49 @@
 <template>
   <div>
     <div v-if="filteredData">
-      <div class="py-8">
+      <div class="py-6">
         <UContainer class="pb-8 flex justify-between items-center">
           <div class="flex gap-2 items-center">
             <Back :to="`/blogs/${name}`" />
             <p class="text-2xl font-bold">Go Back</p>
           </div>
-          <!-- <UBlog :name="name" :slug="slug" /> -->
           <ColorMode />
         </UContainer>
         <UContainer v-if="post" class="">
-          <p class="text-center">
-            {{ post.createdAt }}
-          </p>
-          <h1 class="text-3xl font-bold text-center mt-8 max-w-[600px] mx-auto">
-            {{ post.title }}
-          </h1>
-          <p
+          <div class="text-center text-sm">
+            <ClientOnly>
+              <h1>
+                {{ post.createdAt }}
+              </h1>
+              <template #fallback>
+                <USkeleton class="w-full max-w-52 mx-auto h-20" />
+              </template>
+            </ClientOnly>
+          </div>
+          <div
+            class="text-3xl font-bold text-center mt-8 max-w-[600px] mx-auto"
+          >
+            <ClientOnly>
+              <h1>
+                {{ post.title }}
+              </h1>
+              <template #fallback>
+                <USkeleton class="w-full h-20" />
+              </template>
+            </ClientOnly>
+          </div>
+          <div
             class="text-center text-lg font-semibold mt-4 max-w-[800px] mx-auto"
           >
-            {{ post.description }}
-          </p>
+            <ClientOnly>
+              <p>
+                {{ post.description }}
+              </p>
+              <template #fallback>
+                <USkeleton class="w-full h-20" />
+              </template>
+            </ClientOnly>
+          </div>
           <div
             class="mt-8 max-w-screen-lg w-full relative overflow- m-auto mb-10 h-80 md:h-[450px] md:rounded-2xl md:w-5/6 lg:w-2/3 md:mb-20 before:bg-white/20 before:size-[calc(100%+10px)] before:rounded-2xl before:absolute before:z-[-1] before:top-1/2 before:left-1/2 before:transform before:-translate-x-1/2 before:-translate-y-1/2"
           >
@@ -40,7 +62,12 @@
             </ClientOnly>
           </div>
 
-          <BlogContent v-model="post.content" />
+          <ClientOnly>
+            <BlogContent v-model="post.content" />
+            <template #placeholder>
+              <USkeleton class="h-72 w-full" />
+            </template>
+          </ClientOnly>
         </UContainer>
       </div>
     </div>
@@ -92,7 +119,7 @@ if (posts.length === 0) {
 post.value = posts[0];
 
 definePageMeta({
-  layout: "blog",
+  layout: false,
 });
 
 useHead({
