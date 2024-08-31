@@ -9,7 +9,7 @@
           <h3 class="text-xl font-semibold">Plan Details</h3>
           <p><strong>Plan Name:</strong> {{ data.plan.name }}</p>
           <p><strong>Interval:</strong> {{ data.plan.interval }}</p>
-          <p><strong>Amount:</strong> ${{ data.plan.amount }}</p>
+          <p><strong>Amount:</strong> NGN{{ data.plan.amount / 100 }}</p>
           <p><strong>Start Date:</strong> {{ data.plan.startAt }}</p>
           <p><strong>End Date:</strong> {{ data.plan.endAt }}</p>
         </div>
