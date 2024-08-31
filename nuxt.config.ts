@@ -5,7 +5,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     credential: JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS || "{}"),
-    paystackSeceretKey: process.env.PAYSTACK_SECRET_KEY,
+    paystackSecretKey: process.env.PAYSTACK_SECRET_KEY,
   },
 
   vuefire: {
@@ -24,6 +24,12 @@ export default defineNuxtConfig({
 
   imports: {
     dirs: ["./composables/firebase"],
+  },
+
+  routeRules: {
+    "/dashboard/profile": {
+      redirect: "/404",
+    },
   },
 
   compatibilityDate: "2024-08-27",

@@ -78,11 +78,11 @@ const links = [
     to: "/dashboard/billing",
     icon: "material-symbols:attach-money-rounded",
   },
-  {
-    label: "Profile",
-    to: "/dashboard/profile",
-    icon: "material-symbols-light:account-circle-outline",
-  },
+  // {
+  //   label: "Profile",
+  //   to: "/dashboard/profile",
+  //   icon: "material-symbols-light:account-circle-outline",
+  // },
 ];
 </script>
 
