@@ -139,6 +139,7 @@ const isOpen = ref(false);
 const loading = useLoading();
 const route = useRoute();
 const notification = useNotification();
+const { deletePost } = useGeneral();
 if (!user.value) {
   navigateTo({
     name: "login",
@@ -253,81 +254,81 @@ const items = (row: Post) => [
   ],
 ];
 
-async function deletePost(id: string) {
-  try {
-    loading.value = true;
-    const post = await fetchPost(id);
-    if (post) {
-      await deletePostImage(post.imageId);
-      await updateSitePostIds(id);
-      await updateUserPostIds(id);
-      await removePost(id);
+// async function deletePost(id: string) {
+//   try {
+//     loading.value = true;
+//     const post = await fetchPost(id);
+//     if (post) {
+//       await deletePostImage(post.imageId);
+//       await updateSitePostIds(id);
+//       await updateUserPostIds(id);
+//       await removePost(id);
 
-      notification.success({
-        id: "success",
-        title: "Success",
-        description: "Article deleted successfully",
-      });
-    }
-  } catch (error: any) {
-    console.error(error);
-    notification.error({
-      id: "error",
-      title: "Error",
-      description: error.message,
-    });
-  } finally {
-    loading.value = false;
-    isOpen.value = false;
-  }
-}
+//       notification.success({
+//         id: "success",
+//         title: "Success",
+//         description: "Article deleted successfully",
+//       });
+//     }
+//   } catch (error: any) {
+//     console.error(error);
+//     notification.error({
+//       id: "error",
+//       title: "Error",
+//       description: error.message,
+//     });
+//   } finally {
+//     loading.value = false;
+//     isOpen.value = false;
+//   }
+// }
 
-async function fetchPost(id: string): Promise<Post | null> {
-  const { data: post } = await fetchDoc({
-    collectionName: "posts",
-    id,
-  });
-  return post?.exists() ? (post.data() as Post) : null;
-}
+// async function fetchPost(id: string): Promise<Post | null> {
+//   const { data: post } = await fetchDoc({
+//     collectionName: "posts",
+//     id,
+//   });
+//   return post?.exists() ? (post.data() as Post) : null;
+// }
 
-async function deletePostImage(imageId: string | undefined) {
-  if (imageId) {
-    await deleteFile({ path: `${imageId}` });
-  }
-}
+// async function deletePostImage(imageId: string | undefined) {
+//   if (imageId) {
+//     await deleteFile({ path: `${imageId}` });
+//   }
+// }
 
-async function updateSitePostIds(postId: string) {
-  await modifyDoc({
-    collectionName: "sites",
-    id: props.siteId,
-    arrayOperations: [
-      {
-        field: "postIds",
-        remove: [postId],
-      },
-    ],
-  });
-}
+// async function updateSitePostIds(postId: string) {
+//   await modifyDoc({
+//     collectionName: "sites",
+//     id: props.siteId,
+//     arrayOperations: [
+//       {
+//         field: "postIds",
+//         remove: [postId],
+//       },
+//     ],
+//   });
+// }
 
-async function updateUserPostIds(postId: string) {
-  await modifyDoc({
-    collectionName: "users",
-    id: user.value?.uid!,
-    arrayOperations: [
-      {
-        field: "postIds",
-        remove: [postId],
-      },
-    ],
-  });
-}
+// async function updateUserPostIds(postId: string) {
+//   await modifyDoc({
+//     collectionName: "users",
+//     id: user.value?.uid!,
+//     arrayOperations: [
+//       {
+//         field: "postIds",
+//         remove: [postId],
+//       },
+//     ],
+//   });
+// }
 
-async function removePost(id: string) {
-  await removeDoc({
-    collectionName: "posts",
-    id,
-  });
-}
+// async function removePost(id: string) {
+//   await removeDoc({
+//     collectionName: "posts",
+//     id,
+//   });
+// }
 
 function cancel() {
   isOpen.value = false;

@@ -235,92 +235,94 @@ watch(imageId, async (_, oldVal) => {
   }
 });
 
-async function deleteSite(id: string) {
-  try {
-    loading.value = true;
-    const site = await fetchSite(id);
-    if (site) {
-      await deletePosts(site.postIds ?? []);
-      await deleteSiteImage(site.imageId);
-      await updateUserSiteData(id);
-      await removeSite(id);
-      notification.success({
-        id: "success",
-        title: "Success",
-        description: "Site deleted successfully",
-      });
-      navigateTo({ path: "/dashboard/sites" });
-    }
-  } catch (error: any) {
-    notification.error({
-      id: "error",
-      title: "Error",
-      description: error.message,
-    });
-  } finally {
-    loading.value = false;
-    isOpen.value = false;
-  }
-}
+const { deleteSite } = useGeneral();
 
-async function fetchSite(id: string): Promise<Site | null> {
-  const { data: site } = await fetchDoc({
-    collectionName: "sites",
-    id,
-  });
-  return site?.exists() ? (site.data() as Site) : null;
-}
+// async function deleteSite(id: string) {
+//   try {
+//     loading.value = true;
+//     const site = await fetchSite(id);
+//     if (site) {
+//       await deletePosts(site.postIds ?? []);
+//       await deleteSiteImage(site.imageId);
+//       await updateUserSiteData(id);
+//       await removeSite(id);
+//       notification.success({
+//         id: "success",
+//         title: "Success",
+//         description: "Site deleted successfully",
+//       });
+//       navigateTo({ path: "/dashboard/sites" });
+//     }
+//   } catch (error: any) {
+//     notification.error({
+//       id: "error",
+//       title: "Error",
+//       description: error.message,
+//     });
+//   } finally {
+//     loading.value = false;
+//     isOpen.value = false;
+//   }
+// }
 
-async function deletePosts(postIds: string[]) {
-  for (const postId of postIds) {
-    const post = await fetchPost(postId);
-    if (post) {
-      await deletePostImage(post.imageId);
-      await removePost(postId);
-    }
-  }
-}
+// async function fetchSite(id: string): Promise<Site | null> {
+//   const { data: site } = await fetchDoc({
+//     collectionName: "sites",
+//     id,
+//   });
+//   return site?.exists() ? (site.data() as Site) : null;
+// }
 
-async function fetchPost(id: string): Promise<Post | null> {
-  const { data: post } = await fetchDoc({
-    collectionName: "posts",
-    id,
-  });
-  return post?.exists() ? (post.data() as Post) : null;
-}
+// async function deletePosts(postIds: string[]) {
+//   for (const postId of postIds) {
+//     const post = await fetchPost(postId);
+//     if (post) {
+//       await deletePostImage(post.imageId);
+//       await removePost(postId);
+//     }
+//   }
+// }
 
-async function deletePostImage(imageId: string | undefined) {
-  if (imageId) {
-    await deleteFile({ path: `${imageId}` });
-  }
-}
+// async function fetchPost(id: string): Promise<Post | null> {
+//   const { data: post } = await fetchDoc({
+//     collectionName: "posts",
+//     id,
+//   });
+//   return post?.exists() ? (post.data() as Post) : null;
+// }
 
-async function removePost(id: string) {
-  await removeDoc({ collectionName: "posts", id });
-}
+// async function deletePostImage(imageId: string | undefined) {
+//   if (imageId) {
+//     await deleteFile({ path: `${imageId}` });
+//   }
+// }
 
-async function deleteSiteImage(imageId: string | undefined) {
-  if (imageId) {
-    await deleteFile({ path: `${imageId}` });
-  }
-}
+// async function removePost(id: string) {
+//   await removeDoc({ collectionName: "posts", id });
+// }
 
-async function updateUserSiteData(siteId: string) {
-  const siteData = await fetchSite(siteId);
-  const postIds = siteData?.postIds || [];
-  await modifyDoc({
-    collectionName: "users",
-    id: user.value?.uid!,
-    arrayOperations: [
-      { field: "postIds", remove: [...postIds] },
-      { field: "siteIds", remove: [siteId] },
-    ],
-  });
-}
+// async function deleteSiteImage(imageId: string | undefined) {
+//   if (imageId) {
+//     await deleteFile({ path: `${imageId}` });
+//   }
+// }
 
-async function removeSite(id: string) {
-  await removeDoc({ collectionName: "sites", id });
-}
+// async function updateUserSiteData(siteId: string) {
+//   const siteData = await fetchSite(siteId);
+//   const postIds = siteData?.postIds || [];
+//   await modifyDoc({
+//     collectionName: "users",
+//     id: user.value?.uid!,
+//     arrayOperations: [
+//       { field: "postIds", remove: [...postIds] },
+//       { field: "siteIds", remove: [siteId] },
+//     ],
+//   });
+// }
+
+// async function removeSite(id: string) {
+//   await removeDoc({ collectionName: "sites", id });
+// }
 
 function cancel() {
   isOpen.value = false;
