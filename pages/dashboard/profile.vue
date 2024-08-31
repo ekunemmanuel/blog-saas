@@ -122,20 +122,10 @@ async function deleteAccount() {
   try {
     if (!user.value) return;
 
-    const { data } = await fetchDoc({
-      collectionName: "users",
-      id: user.value.uid,
-    });
-
-    if (data && data.exists()) {
-      const userData = data.data() as User;
-
-      await Promise.all([
-        ...(userData.siteIds?.map(deleteSite) || []),
-        ...(userData.postIds?.map(deletePost) || []),
-      ]);
-
-      await removeDoc({ collectionName: "users", id: userData.id });
+    const userData = await getUserData(user.value.uid);
+    if (userData) {
+      await deleteUserRelatedData(userData);
+      await removeUser(userData.id);
     }
 
     await deleteAccountFirebase(user.value);
@@ -156,19 +146,34 @@ async function deleteAccount() {
   }
 }
 
+async function getUserData(uid: string): Promise<User | null> {
+  const { data } = await fetchDoc({
+    collectionName: "users",
+    id: uid,
+  });
+  return data?.exists() ? (data.data() as User) : null;
+}
+
+async function deleteUserRelatedData(userData: User) {
+  const siteIds = userData.siteIds || [];
+  const postIds = userData.postIds || [];
+
+  await Promise.all([...siteIds.map(deleteSite), ...postIds.map(deletePost)]);
+}
+
+async function removeUser(userId: string) {
+  await removeDoc({
+    collectionName: "users",
+    id: userId,
+  });
+}
+
 async function deleteSite(id: string) {
   try {
-    const { data } = await fetchDoc({ collectionName: "sites", id });
-
-    if (data && data.exists()) {
-      const siteData = data.data() as Site;
-
-      await Promise.all([
-        ...(siteData.postIds?.map(deletePost) || []),
-        deleteFile({ path: `${siteData.imageId}` }),
-      ]);
-
-      await removeDoc({ collectionName: "sites", id: data.id });
+    const siteData = await getSiteData(id);
+    if (siteData) {
+      await deleteSiteRelatedData(siteData);
+      await removeSite(id);
     }
   } catch (error: any) {
     notification.error({
@@ -179,20 +184,32 @@ async function deleteSite(id: string) {
   }
 }
 
+async function getSiteData(id: string): Promise<Site | null> {
+  const { data } = await fetchDoc({ collectionName: "sites", id });
+  return data?.exists() ? (data.data() as Site) : null;
+}
+
+async function deleteSiteRelatedData(siteData: Site) {
+  const postIds = siteData.postIds || [];
+  await Promise.all([
+    ...postIds.map(deletePost),
+    deleteFile({ path: `${siteData.imageId}` }),
+  ]);
+}
+
+async function removeSite(id: string) {
+  await removeDoc({
+    collectionName: "sites",
+    id,
+  });
+}
+
 async function deletePost(id: string) {
   try {
-    const { data } = await fetchDoc({ collectionName: "posts", id });
-
-    if (data && data.exists()) {
-      const postData = data.data() as Post;
-
-      if (postData.imageId) {
-        await deleteFile({
-          path: `${postData.imageId}`,
-        });
-      }
-
-      await removeDoc({ collectionName: "posts", id: data.id });
+    const postData = await getPostData(id);
+    if (postData) {
+      await deletePostRelatedData(postData);
+      await removePost(id);
     }
   } catch (error: any) {
     notification.error({
@@ -201,6 +218,24 @@ async function deletePost(id: string) {
       id: "error",
     });
   }
+}
+
+async function getPostData(id: string): Promise<Post | null> {
+  const { data } = await fetchDoc({ collectionName: "posts", id });
+  return data?.exists() ? (data.data() as Post) : null;
+}
+
+async function deletePostRelatedData(postData: Post) {
+  if (postData.imageId) {
+    await deleteFile({ path: `${postData.imageId}` });
+  }
+}
+
+async function removePost(id: string) {
+  await removeDoc({
+    collectionName: "posts",
+    id,
+  });
 }
 </script>
 

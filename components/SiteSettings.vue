@@ -38,7 +38,7 @@
               <UIcon v-if="imageUrl" name="heroicons:arrow-right-20-solid" />
               <div
                 v-if="imageUrl"
-                class="size-[100px] overflow-hidden  rounded-md"
+                class="size-[100px] overflow-hidden rounded-md"
               >
                 <ClientOnly>
                   <NuxtImg
@@ -229,7 +229,7 @@ async function handleFileChange(file: File) {
   }, 2000);
 }
 
-watch(imageId, async (newVal, oldVal) => {
+watch(imageId, async (_, oldVal) => {
   if (oldVal) {
     await deleteFile({ path: `${oldVal}` });
   }
@@ -238,47 +238,12 @@ watch(imageId, async (newVal, oldVal) => {
 async function deleteSite(id: string) {
   try {
     loading.value = true;
-    const { data: site } = await fetchDoc({
-      collectionName: "sites",
-      id,
-    });
-
-    if (site?.exists()) {
-      const data = site.data() as Site;
-      // get all posts and delete them
-      for (const postId of data.postIds ?? []) {
-        const { data: post } = await fetchDoc({
-          collectionName: "posts",
-          id: postId,
-        });
-        // if post exists, delete the image and the post
-        if (post?.exists()) {
-          const postData = post.data() as Post;
-          if (postData.imageId) {
-            await deleteFile({
-              path: `${postData.imageId}`,
-            });
-          }
-          await removeDoc({ collectionName: "posts", id: postId });
-        }
-      }
-      // delete site image
-      if (data.imageId) {
-        await deleteFile({ path: `${data.imageId}` });
-      }
-
-      // remove site from user's siteIds and postIds
-      await modifyDoc({
-        collectionName: "users",
-        id: user.value?.uid!,
-        arrayOperations: [
-          { field: "postIds", remove: [...data.postIds!] },
-          { field: "siteIds", remove: [id] },
-        ],
-      });
-
-      // delete site
-      await removeDoc({ collectionName: "sites", id });
+    const site = await fetchSite(id);
+    if (site) {
+      await deletePosts(site.postIds ?? []);
+      await deleteSiteImage(site.imageId);
+      await updateUserSiteData(id);
+      await removeSite(id);
       notification.success({
         id: "success",
         title: "Success",
@@ -296,6 +261,65 @@ async function deleteSite(id: string) {
     loading.value = false;
     isOpen.value = false;
   }
+}
+
+async function fetchSite(id: string): Promise<Site | null> {
+  const { data: site } = await fetchDoc({
+    collectionName: "sites",
+    id,
+  });
+  return site?.exists() ? (site.data() as Site) : null;
+}
+
+async function deletePosts(postIds: string[]) {
+  for (const postId of postIds) {
+    const post = await fetchPost(postId);
+    if (post) {
+      await deletePostImage(post.imageId);
+      await removePost(postId);
+    }
+  }
+}
+
+async function fetchPost(id: string): Promise<Post | null> {
+  const { data: post } = await fetchDoc({
+    collectionName: "posts",
+    id,
+  });
+  return post?.exists() ? (post.data() as Post) : null;
+}
+
+async function deletePostImage(imageId: string | undefined) {
+  if (imageId) {
+    await deleteFile({ path: `${imageId}` });
+  }
+}
+
+async function removePost(id: string) {
+  await removeDoc({ collectionName: "posts", id });
+}
+
+async function deleteSiteImage(imageId: string | undefined) {
+  if (imageId) {
+    await deleteFile({ path: `${imageId}` });
+  }
+}
+
+async function updateUserSiteData(siteId: string) {
+  const siteData = await fetchSite(siteId);
+  const postIds = siteData?.postIds || [];
+  await modifyDoc({
+    collectionName: "users",
+    id: user.value?.uid!,
+    arrayOperations: [
+      { field: "postIds", remove: [...postIds] },
+      { field: "siteIds", remove: [siteId] },
+    ],
+  });
+}
+
+async function removeSite(id: string) {
+  await removeDoc({ collectionName: "sites", id });
 }
 
 function cancel() {

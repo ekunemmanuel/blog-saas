@@ -73,7 +73,7 @@
               </UBadge>
             </template>
             <template #title-data="{ row }">
-              <p class="truncate  max-w-[250px]">
+              <p class="truncate max-w-[250px]">
                 {{ row.title }}
               </p>
             </template>
@@ -153,7 +153,6 @@ const { data: site } = await fetchDoc({
   collectionName: "sites",
   id: props.siteId,
 });
-
 
 const { data: userData } = await fetchDoc({
   collectionName: "users",
@@ -257,44 +256,13 @@ const items = (row: Post) => [
 async function deletePost(id: string) {
   try {
     loading.value = true;
-    const { data: post } = await fetchDoc({
-      collectionName: "posts",
-      id,
-    });
-    if (post?.exists()) {
-      const data = post.data() as Post;
-      await deleteFile({
-        path: `${data.imageId}`,
-      });
-      await modifyDoc({
-        collectionName: "sites",
-        id: props.siteId,
-        data: {},
-        arrayOperations: [
-          {
-            field: "postIds",
-            remove: [id],
-          },
-        ],
-      });
-      await modifyDoc({
-        collectionName: "users",
-        id: user.value?.uid!,
-        data: {},
-        arrayOperations: [
-          {
-            field: "postIds",
-            remove: [id],
-          },
-        ],
-      });
-      await removeDoc({
-        collectionName: "posts",
-        id,
-      });
+    const post = await fetchPost(id);
+    if (post) {
+      await deletePostImage(post.imageId);
+      await updateSitePostIds(id);
+      await updateUserPostIds(id);
+      await removePost(id);
 
-      loading.value = false;
-      isOpen.value = false;
       notification.success({
         id: "success",
         title: "Success",
@@ -308,10 +276,57 @@ async function deletePost(id: string) {
       title: "Error",
       description: error.message,
     });
-    loading.value = false;
   } finally {
     loading.value = false;
+    isOpen.value = false;
   }
+}
+
+async function fetchPost(id: string): Promise<Post | null> {
+  const { data: post } = await fetchDoc({
+    collectionName: "posts",
+    id,
+  });
+  return post?.exists() ? (post.data() as Post) : null;
+}
+
+async function deletePostImage(imageId: string | undefined) {
+  if (imageId) {
+    await deleteFile({ path: `${imageId}` });
+  }
+}
+
+async function updateSitePostIds(postId: string) {
+  await modifyDoc({
+    collectionName: "sites",
+    id: props.siteId,
+    arrayOperations: [
+      {
+        field: "postIds",
+        remove: [postId],
+      },
+    ],
+  });
+}
+
+async function updateUserPostIds(postId: string) {
+  await modifyDoc({
+    collectionName: "users",
+    id: user.value?.uid!,
+    arrayOperations: [
+      {
+        field: "postIds",
+        remove: [postId],
+      },
+    ],
+  });
+}
+
+async function removePost(id: string) {
+  await removeDoc({
+    collectionName: "posts",
+    id,
+  });
 }
 
 function cancel() {
