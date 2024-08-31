@@ -58,7 +58,6 @@ export default defineEventHandler(async (event) => {
     // }
 
     const { paystackSecretKey } = useRuntimeConfig();
-    
 
     const { data: result } = await $fetch<{
       data: { authorization_url: string; reference: string };
