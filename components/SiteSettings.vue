@@ -8,6 +8,39 @@
 
       <UCard>
         <template #header>
+          <h2 class="text-lg font-semibold">Update Site</h2>
+          <p class="text-gray-500 dark:text-gray-400 mt-1">
+            Update your site by filling out the form below.
+          </p>
+        </template>
+        <fieldset :disabled="loading">
+          <UForm
+            :schema="schema"
+            :state="state"
+            @submit="onSubmit"
+            class="space-y-4"
+          >
+            <UFormGroup label="Name" name="name">
+              <UInput v-model="state.name" />
+            </UFormGroup>
+            <UFormGroup label="Description" name="description">
+              <UTextarea v-model="state.description" />
+            </UFormGroup>
+            <UButton
+              type="submit"
+              block
+              trailing
+              icon="heroicons:arrow-right-20-solid"
+              :loading
+            >
+              Submit
+            </UButton>
+          </UForm>
+        </fieldset>
+      </UCard>
+
+      <UCard>
+        <template #header>
           <h3 class="text-2xl font-bold">Image</h3>
           <p class="text-gray-500 dark:text-gray-400 mt-1">
             This is the image of your site you can change it here
@@ -125,6 +158,8 @@
 <script lang="ts" setup>
 import { v4 } from "uuid";
 import type { Post, Site } from "~/types";
+import { z } from "zod";
+import type { FormSubmitEvent } from "#ui/types";
 const dropZoneRef = ref<HTMLDivElement>();
 const imageId = ref<string>();
 const uploading = ref(false);
@@ -141,7 +176,7 @@ const { modifyDoc, deleteFile, uploadFile, fetchDoc, removeDoc } =
   useFirebase();
 const user = useCurrentUser();
 const route = useRoute();
-
+const site = ref<Site>();
 if (!user.value) {
   navigateTo({
     name: "login",
@@ -149,14 +184,27 @@ if (!user.value) {
   });
 }
 
-const { data: site } = await fetchDoc({
+const state = reactive<{
+  name?: string;
+  description?: string;
+}>({
+  name: undefined,
+  description: undefined,
+});
+const { data: siteDoc } = await fetchDoc({
   collectionName: "sites",
   id: props.siteId,
 });
 
-if (site?.exists()) {
-  previousImageId.value = site.data().imageId || null;
-  previousImageUrl.value = site.data().imageUrl || null;
+if (siteDoc?.exists()) {
+  previousImageId.value = siteDoc.data().imageId || null;
+  previousImageUrl.value = siteDoc.data().imageUrl || null;
+  site.value = {
+    id: siteDoc.id,
+    ...(siteDoc.data() as Site),
+  };
+  state.name = site.value.name;
+  state.description = site.value.description;
 } else {
   notification.error({
     id: "not-found",
@@ -166,6 +214,38 @@ if (site?.exists()) {
   navigateTo({
     path: "/dashboard/sites",
   });
+}
+const schema = z.object({
+  name: z.string().min(3).max(40),
+
+  description: z.string().min(3).max(300),
+});
+
+type Schema = z.output<typeof schema>;
+
+async function onSubmit(event: FormSubmitEvent<Schema>) {
+  const newData = event.data;
+
+  try {
+    if (!site.value || !site.value.id) return;
+
+    await modifyDoc({
+      collectionName: "sites",
+      id: site.value.id,
+      data: newData
+    });
+    notification.success({
+      id:'success',
+      description: 'Site details has been updated',
+      title:"Success"
+    })
+  } catch (error) {
+    notification.error({
+      id:'error',
+      description: 'Site details has not been updated',
+      title:"Error"
+    })
+  }
 }
 
 function onDrop(files: File[] | null) {
@@ -234,7 +314,6 @@ watch(imageId, async (_, oldVal) => {
     await deleteFile({ path: `${oldVal}` });
   }
 });
-
 
 async function deleteSite(id: string) {
   try {

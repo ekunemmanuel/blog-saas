@@ -1,5 +1,5 @@
 <template>
-  <div class="py-6 flex-col flex justify-between min-h-screen gap-6">
+  <div class="py-6 space-y-6">
     <div>
       <RecentSites />
     </div>

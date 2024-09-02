@@ -1,25 +1,27 @@
 <template>
   <UContainer
     v-if="editor"
-    class="space-y-4 min-h-[700px] rounded-lg border p-8 flex flex-col bg"
+    class="space-y-4 min-h-[700px] rounded-lg border p2-8   flex flex-col relative"
   >
-    <div
-      class="gap-2 flex-wrap grid grid-cols-[repeat(auto-fit,minmax(min(100px,100%),1fr))]"
-    >
-      <UButton
-        v-for="(button, index) in buttons"
-        :key="index"
-        @click="button.action"
-        :disabled="button.isDisabled ? button.isDisabled() : false"
-        :color="
-          button.isActive ? (button.isActive() ? 'primary' : 'gray') : 'gray'
-        "
-        class=""
+    <div class=" sticky top-0 dark:bg-[#171717] bg-white z-10 pt-8">
+      <div
+        class="gap-2 flex-wrap grid grid-cols-[repeat(auto-fit,minmax(min(100px,100%),1fr))]"
       >
-        <div>
-          {{ button.label }}
-        </div>
-      </UButton>
+        <UButton
+          v-for="(button, index) in buttons"
+          :key="index"
+          @click="button.action"
+          :disabled="button.isDisabled ? button.isDisabled() : false"
+          :color="
+            button.isActive ? (button.isActive() ? 'primary' : 'gray') : 'gray'
+          "
+          class=""
+        >
+          <div>
+            {{ button.label }}
+          </div>
+        </UButton>
+      </div>
     </div>
     <editor-content :editor="editor" class="grid flex-1" />
   </UContainer>
@@ -78,7 +80,7 @@ const editor = useEditor({
   editorProps: {
     attributes: {
       class:
-        " dark:prose-invert dark:bg-gray-700 bg-gray-200 max-w-full focus:outline-none  p-2 break-before-all prose prose-sm sm:prose-base lg:prose-lg xl:prose-2xl        ",
+        " dark:prose-invert  max-w-full focus:outline-none  p-2 break-before-all prose prose-sm sm:prose-base lg:prose-lg xl:prose-2xl        ",
     },
   },
   onUpdate: () => {

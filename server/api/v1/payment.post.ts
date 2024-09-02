@@ -43,19 +43,21 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // const user = userDoc.data() as User;
+    const user = userDoc.data() as User;
 
-    // // Check if the plan is still valid if it exists
-    // if (user.plan && isPlanValid(user.plan.startAt, user.plan.endAt)) {
-    //   throw createError({
-    //     statusCode: 400,
-    //     message: "The current subscription is still valid",
-    //     data: {
-    //       message:
-    //         "The current subscription is still valid until " + user.plan.endAt,
-    //     },
-    //   });
-    // }
+    // Check if the plan is still valid if it exists
+    if (user.subscription?.status == "active") {
+      throw createError({
+        statusCode: 400,
+        message: "The current subscription is still valid until " +
+            formatDate(new Date(user.subscription.nextPaymentDate)),
+        data: {
+          message:
+            "The current subscription is still valid until " +
+            formatDate(new Date(user.subscription.nextPaymentDate)),
+        },
+      });
+    }
 
     const { paystackSecretKey } = useRuntimeConfig();
 
@@ -88,6 +90,7 @@ export default defineEventHandler(async (event) => {
     throw createError({
       status: 400,
       message: "Pls try again or contact us",
+      data:error
     });
   }
 });

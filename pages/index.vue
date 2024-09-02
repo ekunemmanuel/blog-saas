@@ -81,15 +81,7 @@
 
     <UContainer class="pb-8">
       <h2 class="text-center text-3xl">Pricing</h2>
-      <div
-        class="grid grid-cols-[repeat(auto-fit,minmax(270px,1fr))] gap-4 mt-8"
-      >
-        <BillingCard
-          v-for="billing in plans"
-          :key="billing.plan"
-          :billing="billing"
-        />
-      </div>
+      <Billing />
     </UContainer>
   </main>
 </template>
@@ -99,8 +91,6 @@ const user = useCurrentUser();
 useHead({
   title: "Blog SaaS",
 });
-
-const plans = usePlans();
 </script>
 
 <style scoped></style>

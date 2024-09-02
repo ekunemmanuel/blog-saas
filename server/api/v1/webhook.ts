@@ -1,10 +1,9 @@
 import { getFirestore, Timestamp } from "firebase-admin/firestore";
 import { createHmac } from "crypto";
-import { User } from "~/types";
 import { getAuth } from "firebase-admin/auth";
 
 export default defineEventHandler(async (event) => {
-  const body = await readBody<PaystackWebhookData>(event);
+  const body = await readBody<PaystackEvent>(event);
   const { paystackSecretKey } = useRuntimeConfig();
 
   // Verify Paystack signature
@@ -18,121 +17,55 @@ export default defineEventHandler(async (event) => {
       message: "Invalid signature",
     });
   }
+  await handlePaystackEvent(body);
+});
 
-  const { event: eventType, data } = body;
-
-  console.log({ body });
-
-  if (data.status !== "success") {
-    console.log({ more: body });
-    return;
+async function handlePaystackEvent(paystackEvent: PaystackEvent) {
+  switch (paystackEvent.event) {
+    case "subscription.create":
+    case "subscription.disable":
+    case "subscription.not_renew":
+      await subscriptionEvent(paystackEvent.data);
+      break;
+    default:
+      console.log("Unknown event type:", paystackEvent);
   }
+}
 
+async function subscriptionEvent(subscriptionData: SubscriptionData) {
   try {
-    const ref =
-      eventType === "charge.success"
-        ? data.reference
-        : data.transaction.reference;
-    const { data: verifiedData } = await verifyPayment(ref);
-
-    if (verifiedData.status !== "success") {
-      console.log({
-        statusCode: 400,
-        message: "Payment verification failed",
-      });
+    const status = subscriptionData.status;
+    const user = await getUserByEmail(subscriptionData.customer.email);
+    if (!user) {
+      return;
+    }
+    if (status.toLowerCase() == "attention") {
+      // do somethhing
       return;
     }
 
-    const user = await getUserByEmail(verifiedData.customer.email);
-    const userId = user.uid;
-    const plan = createPlanObject(
-      verifiedData.plan_object,
-      verifiedData.paid_at
-    );
-
-    await updateUserData(userId, {
-      plan,
-      customerCode: verifiedData.customer.customer_code,
+    const subscription = {
+      status,
+      amount: subscriptionData.amount / 100,
+      subscriptionCode: subscriptionData.subscription_code,
+      token: subscriptionData.email_token,
+      customerCode: subscriptionData.customer.customer_code,
+      plan: {
+        name: subscriptionData.plan.name,
+        code: subscriptionData.plan.plan_code,
+        amount: subscriptionData.plan.amount / 100,
+        interval: subscriptionData.plan.interval,
+      },
+      nextPaymentDate: formatDate(new Date(subscriptionData.next_payment_date)),
+    };
+    await updateUserData(user.uid, {
+      subscription,
     });
   } catch (error) {
-    console.log({
-      statusCode: 500,
-      message: "An error occurred during payment verification",
-      data: error,
-    });
     throw createError({
       statusCode: 500,
-      message: "An error occurred during payment verification",
+      message: "An error occurred",
       data: error,
-    });
-  }
-});
-
-// Function to create a plan object with start and end dates
-function createPlanObject(
-  planObject: PaystackWebhookVerification["data"]["plan_object"],
-  paidAt: string
-) {
-  return {
-    code: planObject.plan_code,
-    name: planObject.name,
-    interval: planObject.interval,
-    amount: planObject.amount,
-    startAt: formatDate(new Date(paidAt)),
-    endAt: formatDate(calculateEndDate(planObject.interval, new Date(paidAt))),
-  };
-}
-
-// Function to calculate the end date based on the interval
-function calculateEndDate(interval: string, startDate: Date): Date {
-  const endDate = new Date(startDate);
-  switch (interval) {
-    case "hourly":
-      endDate.setHours(endDate.getHours() + 1);
-      break;
-    case "daily":
-      endDate.setDate(endDate.getDate() + 1);
-      break;
-    case "weekly":
-      endDate.setDate(endDate.getDate() + 7);
-      break;
-    case "monthly":
-      endDate.setMonth(endDate.getMonth() + 1);
-      break;
-    case "quarterly":
-      endDate.setMonth(endDate.getMonth() + 3);
-      break;
-    case "biannually":
-      endDate.setMonth(endDate.getMonth() + 6);
-      break;
-    case "annually":
-    case "yearly":
-      endDate.setFullYear(endDate.getFullYear() + 1);
-      break;
-  }
-  return endDate;
-}
-
-// Function to verify payment using Paystack API
-async function verifyPayment(reference: string) {
-  const { paystackSecretKey } = useRuntimeConfig();
-  try {
-    const response = await $fetch<PaystackWebhookVerification>(
-      `https://api.paystack.co/transaction/verify/${reference}`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${paystackSecretKey}`,
-        },
-      }
-    );
-    console.log({ response });
-
-    return response;
-  } catch (error) {
-    throw createError({
-      status: 400,
-      message: "Error verifying payment",
     });
   }
 }
@@ -144,7 +77,7 @@ async function getUserByEmail(email: string) {
 }
 
 // Function to update user data in Firestore
-async function updateUserData(userId: string, params: Partial<User>) {
+async function updateUserData(userId: string, params: any) {
   const db = getFirestore();
   const userRef = db.collection("users").doc(userId);
   const userDoc = await userRef.get();
@@ -157,47 +90,37 @@ async function updateUserData(userId: string, params: Partial<User>) {
   });
 }
 
-interface PaystackWebhookVerification {
-  event: "invoice.create" | "charge.success";
-  data: {
-    status: "success";
-    reference: string; // This is the reference for the transaction for charge.success event
-    amount: number;
-    paid_at: string;
-    authorization: {
-      authorization_code: string;
-      signature: string;
-    };
-    customer: {
-      email: string;
-      customer_code: string;
-    };
-    plan: string;
-    transaction: {
-      // This is only available for invoice.create event
-      reference: string; // This is the reference for the transaction
-    }; // This is only available for invoice.create event
-    plan_object: {
-      id: number;
-      name: string;
-      plan_code: string;
-      description: string;
-      amount: number;
-      interval: string;
-    };
-  };
+interface Customer {
+  email: string;
+  customer_code: string;
 }
 
-interface PaystackWebhookData {
-  event: string;
-  data: {
-    status: string;
-    reference: string;
-    transaction: {
-      reference: string;
-      status: string;
-      amount: number;
-      currency: string;
-    };
-  };
+interface Subscription {
+  status: string;
+  subscription_code: string;
+  email_token?: string;
 }
+interface Plan {
+  name: string;
+  plan_code: string;
+  amount: number;
+  interval: string;
+}
+
+interface SubscriptionData {
+  status: "completed" | "cancelled" | "non-renewing" | "active" | "attention";
+  next_payment_date: string;
+  subscription_code: string;
+  email_token: string;
+  amount: number;
+  customer: Customer;
+  plan: Plan;
+}
+
+type PaystackEvent = {
+  event:
+    | "subscription.create"
+    | "subscription.not_renew"
+    | "subscription.disable";
+  data: SubscriptionData;
+};

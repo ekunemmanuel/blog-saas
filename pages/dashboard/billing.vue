@@ -5,18 +5,12 @@
       Pricing Plans for Everyone and Every Budget!
     </h1>
 
-    <div class="grid grid-cols-[repeat(auto-fit,minmax(270px,1fr))] gap-4 mt-8">
-      <BillingCard
-        v-for="billing in plans"
-        :key="billing.plan"
-        :billing="billing"
-      />
-    </div>
+    <Billing />
   </UContainer>
 </template>
 
 <script lang="ts" setup>
-const plans = usePlans();
+
 </script>
 
 <style></style>

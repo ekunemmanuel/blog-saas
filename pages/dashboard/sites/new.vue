@@ -15,7 +15,11 @@
           class="space-y-4"
         >
           <template v-for="(value, key) in state" :key="key">
-            <UFormGroup :label="capitalizeFirstLetter(key)" :name="key" required>
+            <UFormGroup
+              :label="capitalizeFirstLetter(key)"
+              :name="key"
+              required
+            >
               <UInput
                 v-if="key != 'description'"
                 v-model="state[key]"
@@ -124,7 +128,7 @@ const schema = z.object({
         message: "Subdirectory already exists.",
       }
     ),
-  description: z.string().min(3).max(100),
+  description: z.string().min(3).max(300),
 });
 
 const state = reactive({
@@ -179,6 +183,10 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
 watch(state, (val) => {
   const formatted = val.subdirectory.toLowerCase().replace(/\s/g, "-");
   state.subdirectory = formatted;
+
+  // Capitalize the first letter of the name
+  const formattedName = capitalizeFirstLetter(val.name);
+  state.name = formattedName;
 });
 
 useHead({

@@ -21,13 +21,12 @@ import {
   type WhereFilterOp,
   Timestamp,
   addDoc,
+  onSnapshot,
 } from "firebase/firestore";
 
 export const useDb = () => {
   const db = useFirestore();
   const loading = useLoading();
-
-
 
   function getDocs<T>({
     collectionName,
@@ -127,7 +126,6 @@ export const useDb = () => {
       remove?: any[];
     }[];
   }) {
-   
     const docRef = doc(collection(db, collectionName), id);
     try {
       loading.value = true;
@@ -150,7 +148,6 @@ export const useDb = () => {
 
         await updateDoc(docRef, updateData);
       }
-
     } catch (error) {
     } finally {
       loading.value = false;
@@ -222,6 +219,41 @@ export const useDb = () => {
     }
   }
 
+  function subscribeToDoc({
+    collectionName,
+    id,
+    onUpdate,
+    onError,
+  }: {
+    collectionName: string;
+    id?: string;
+    onUpdate: (data: any) => void;
+    onError: (error: any) => void;
+  }) {
+    try {
+      if (!id) {
+        // onError(new Error("Document ID is required"));
+        return;
+      }
+      const docRef = doc(collection(db, collectionName), id);
+      const unsubscribe = onSnapshot(
+        docRef,
+        (docSnapshot) => {
+          if (docSnapshot.exists()) {
+            onUpdate(docSnapshot.data());
+          } else {
+            onError(new Error("Document does not exist"));
+          }
+        },
+        (error) => {
+          onError(error);
+        }
+      );
+      return unsubscribe;
+    } catch (error) {
+      onError(error);
+    }
+  }
   return {
     createDoc,
     getDoc,
@@ -230,6 +262,7 @@ export const useDb = () => {
     removeDoc,
     fetchDocs,
     fetchDoc,
+    subscribeToDoc,
   };
 };
 

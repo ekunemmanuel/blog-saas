@@ -13,6 +13,7 @@ export const useAuthentication = () => {
   const loading = useLoading();
   const route = useRoute();
   const notification = useNotification();
+
   async function signUp(data: SignUp) {
     try {
       loading.value = true;
@@ -83,34 +84,9 @@ export const useAuthentication = () => {
     }
   }
 
-  // async function deleteAccount(user: FirebaseUser) {
-  //   try {
-  //     loading.value = true;
-  //     if (!auth) {
-  //       throw new Error("Auth not initialised");
-  //     }
-  //     await deleteUser(user);
-
-  //     navigateTo({
-  //       path: "/login",
-  //       query: {
-  //         redirect: route.fullPath,
-  //       },
-  //     });
-  //   } catch (e) {
-  //     console.error(e);
-  //     const error = e as AuthError;
-  //     console.error(error);
-
-  //     loading.value = false;
-  //   }
-  // }
-
   async function deleteAccount(user: FirebaseUser) {
     try {
       loading.value = true;
-
-      if (!auth) throw new Error("Auth not initialized");
 
       await deleteUser(user);
 

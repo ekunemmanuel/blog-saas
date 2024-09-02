@@ -1,4 +1,3 @@
-import { user } from "firebase-functions/v1/auth";
 export interface Login {
   email: string;
   password: string;
@@ -8,24 +7,8 @@ export interface SignUp extends Login {
   name: string;
 }
 
-export interface User {
-  id: string;
-  displayName: string;
-  email: string;
-  siteIds?: string[];
-  postIds?: string[];
-  createdAt?: string;
-  updatedAt?: string;
-  customerCode?: string;
-  plan?: {
-    code: string;
-    name: string;
-    interval: string;
-    amount: number;
-    startAt: string;
-    endAt: string;
-  };
-}
+
+
 
 export interface Site {
   id?: string;
@@ -53,4 +36,31 @@ export interface Post {
   siteId: string; // site id
   imageId: string; // image id to locate file in storage
   status: boolean;
+}
+
+export interface Subscription {
+  status: "completed" | "cancelled" | "non-renewing" | "active" | "attention";
+  amount: number;
+  subscriptionCode: string;
+  token: string;
+  customerCode: string;
+  plan: {
+    name: string;
+    code: string;
+    amount: number;
+    interval: string;
+  };
+  nextPaymentDate: string;
+}
+
+export interface User {
+  id: string;
+  displayName: string;
+  email: string;
+  siteIds?: string[];
+  postIds?: string[];
+  createdAt?: string;
+  updatedAt?: string;
+  customerCode?: string;
+  subscription?: Subscription;
 }

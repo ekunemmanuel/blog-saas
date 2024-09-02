@@ -1,59 +1,114 @@
 <template>
-  <div>
-    <UContainer class="p-6">
-      <div v-if="data" class="space-y-4">
-        <h2 class="text-2xl font-semibold">{{ data.displayName }}</h2>
-        <p><strong>Email:</strong> {{ data.email }}</p>
+  <div class="flex flex-col h-screen pb-6">
+    <div class="flex-1">
+      <UContainer class="p-6">
+        <div v-if="data">
+          <div class="space-y-4">
+            <div>
+              <h2 class="text-2xl font-semibold">{{ data.displayName }}</h2>
+              <p><strong>Email:</strong> {{ data.email }}</p>
+            </div>
+            <div>
+              <p><strong>Account Created:</strong> {{ data.createdAt }}</p>
+              <p><strong>Last Updated:</strong> {{ data.updatedAt }}</p>
+            </div>
+            <div v-if="data.siteIds?.length" class="mt-4">
+              <h3 class="text-xl font-semibold">Sites</h3>
+              <p>{{ data.siteIds.length }}</p>
+            </div>
 
-        <div v-if="data.plan" class="mt-4 p-4 border rounded-lg bg-gray-500">
-          <h3 class="text-xl font-semibold">Plan Details</h3>
-          <p><strong>Plan Name:</strong> {{ data.plan.name }}</p>
-          <p><strong>Interval:</strong> {{ data.plan.interval }}</p>
-          <p><strong>Amount:</strong> NGN{{ data.plan.amount / 100 }}</p>
-          <p><strong>Start Date:</strong> {{ data.plan.startAt }}</p>
-          <p><strong>End Date:</strong> {{ data.plan.endAt }}</p>
+            <div v-if="data.postIds?.length" class="mt-4">
+              <h3 class="text-xl font-semibold">Posts</h3>
+              <p>{{ data.postIds.length }}</p>
+            </div>
+            <div v-if="data.subscription" class="space-y-2">
+              <div>
+                <h3 class="text-xl font-semibold">Subscription Details</h3>
+                <p>
+                  <strong>Status: </strong>
+                  <span class="capitalize">
+                    {{ data.subscription.status }}
+                  </span>
+                </p>
+                <p>
+                  <strong>Customer Code:</strong>
+                  {{ data.subscription.customerCode }}
+                </p>
+                <p>
+                  <strong>Plan Name:</strong> {{ data.subscription.plan.name }}
+                </p>
+                <p>
+                  <strong>Interval: </strong>
+                  <span class="capitalize">
+                    {{ data.subscription.plan.interval }}
+                  </span>
+                </p>
+                <p>
+                  <strong>Amount:</strong> NGN
+                  {{ data.subscription.plan.amount }}
+                </p>
+                <p>
+                  <strong>Next Payment:</strong>
+                  {{ data.subscription.nextPaymentDate }}
+                </p>
+              </div>
+              <div v-if="data.subscription.status == 'active'">
+                <UButton
+                  label="Disable"
+                  @click="
+                    disableSubscription(
+                      data.subscription.subscriptionCode,
+                      data.subscription.token
+                    )
+                  "
+                />
+              </div>
+              <div v-else>
+                <UButton
+                  label="Enable"
+                  @click="
+                    makePayment(
+                      data.subscription.plan.code,
+                      data.subscription.plan.name
+                    )
+                  "
+                />
+              </div>
+            </div>
+          </div>
         </div>
-
-        <div v-if="data.siteIds?.length" class="mt-4">
-          <h3 class="text-xl font-semibold">Sites</h3>
-          <p>{{ data.siteIds.length }}</p>
+        <div v-else>
+          <USkeleton class="h-40 w-full" />
         </div>
-
-        <div v-if="data.postIds?.length" class="mt-4">
-          <h3 class="text-xl font-semibold">Posts</h3>
-          <p>{{ data.postIds.length }}</p>
-        </div>
-
-        <div class="mt-4">
-          <p><strong>Customer Code:</strong> {{ data.customerCode }}</p>
-          <p><strong>Account Created:</strong> {{ data.createdAt }}</p>
-          <p><strong>Last Updated:</strong> {{ data.updatedAt }}</p>
-        </div>
-      </div>
-      <div v-else>
-        <p class="text-gray-500">No user data available.</p>
-      </div>
-    </UContainer>
-    <UContainer>
-      <UCard
-        :ui="{
-          background: 'dark:bg-red-900 bg-red-400',
-          ring: 'ring-1 ring-red-200 dark:ring-red-800',
-        }"
-      >
-        <h3 class="text-2xl font-bold dark:text-red-200 text-red-700">
-          Danger
-        </h3>
-        <p class="text-gray-900 dark:text-gray-200 mt-1">
-          Are you sure you want to delete your Account? This action cannot be
-          undone.
-        </p>
-        <div class="flex justify-end gap-2">
-          <UButton label="Delete" color="rose" @click="() => (isOpen = true)" />
-        </div>
-      </UCard>
-    </UContainer>
+      </UContainer>
+    </div>
+    <div class="mt-4">
+      <UContainer>
+        <UCard
+          :ui="{
+            background: 'dark:bg-red-900 bg-red-400',
+            ring: 'ring-1 ring-red-200 dark:ring-red-800',
+          }"
+        >
+          <h3 class="text-2xl font-bold dark:text-red-200 text-red-700">
+            Danger
+          </h3>
+          <p class="text-gray-900 dark:text-gray-200 mt-1">
+            Are you sure you want to delete your account? This action cannot be
+            undone.
+          </p>
+          <div class="flex justify-end gap-2">
+            <UButton
+              label="Delete"
+              color="rose"
+              @click="() => (isOpen = true)"
+            />
+          </div>
+        </UCard>
+      </UContainer>
+    </div>
   </div>
+
   <UModal v-model="isOpen" :prevent-close="loading">
     <UCard>
       <template #header>
@@ -82,13 +137,10 @@
 import type { Post, Site, User } from "~/types";
 
 const user = useCurrentUser();
-const {
-  getDoc,
-  removeDoc,
-  fetchDoc,
-  deleteFile,
-  deleteAccount,
-} = useFirebase();
+const { makePayment, disableSubscription } = useBilling();
+const { getDoc, removeDoc, fetchDoc, deleteFile, deleteAccount } =
+  useFirebase();
+
 const notification = useNotification();
 const isOpen = ref(false);
 const loading = useLoading();
@@ -120,11 +172,22 @@ async function deleteUserAccount() {
 
     const userData = await getUserData(user.value.uid);
     if (userData) {
+      if (userData.subscription?.status === "active") {
+        notification.info({
+          title: "Info",
+          description: "Disabling subscription...",
+          id: "info",
+        });
+        await disableSubscription(
+          userData.subscription?.subscriptionCode,
+          userData.subscription?.token
+        );
+      }
       await deleteUserRelatedData(userData);
+
+      await deleteAccount(user.value);
       await removeUser(userData.id);
     }
-
-    await deleteAccount(user.value);
 
     notification.success({
       title: "Success",
