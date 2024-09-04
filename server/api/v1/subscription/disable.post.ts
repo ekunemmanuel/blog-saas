@@ -50,7 +50,7 @@ async function disableSubscription(code: string, token: string) {
     return response;
   } catch (error) {
     throw createError({
-      status: 400, 
+      status: 400,
       message: "Error disabling subscription",
     });
   }
