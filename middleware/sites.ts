@@ -45,8 +45,6 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     (planName === "Basic" && (userData?.siteIds?.length ?? 0) >= 3) ||
     (planName === "Pro" && (userData?.siteIds?.length ?? 0) >= 10); // Assuming Pro has a limit for illustration
 
-    console.log("siteLimitReached", siteLimitReached);
-    
 
   if (siteLimitReached) {
     if (subscriptionStatus === "cancelled" || subscriptionStatus === "non-renewing" || subscriptionStatus === "attention") {

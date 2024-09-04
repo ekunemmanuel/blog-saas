@@ -6,6 +6,11 @@ export default defineNuxtConfig({
   runtimeConfig: {
     credential: JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS || "{}"),
     paystackSecretKey: process.env.PAYSTACK_SECRET_KEY,
+    public: {
+      basicPlan: process.env.basicPlan,
+      proPlan: process.env.proPlan,
+      enterprisePlan: process.env.enterprisePlan,
+    },
   },
 
   vuefire: {
