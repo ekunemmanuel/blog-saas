@@ -96,6 +96,15 @@ export const useAuthentication = () => {
       });
     } catch (error) {
       console.error(error);
+      const e = error as AuthError;
+      
+      if (e.code === "auth/requires-recent-login") {
+        notification.error({
+          id: e.code,
+          description: 'Please re-authenticate to delete your account',
+          title: e.name,
+        });
+      }
       loading.value = false;
     }
   }

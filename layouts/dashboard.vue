@@ -6,7 +6,11 @@
     <div class="block md:hidden">
       <div class="flex justify-between items-center p-4">
         <Logo />
-        <UButton label="menu" @click="isSliderOpen = true" />
+        <UButton
+          icon="material-symbols:filter-list-rounded"
+          @click="isSliderOpen = !isSliderOpen"
+          variant="ghost"
+        />
       </div>
     </div>
     <div class="flex-1 overflow-auto">

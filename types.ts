@@ -7,9 +7,6 @@ export interface SignUp extends Login {
   name: string;
 }
 
-
-
-
 export interface Site {
   id?: string;
   name: string;
@@ -38,8 +35,15 @@ export interface Post {
   status: boolean;
 }
 
-export interface Subscription {
-  status: "completed" | "cancelled" | "non-renewing" | "active" | "attention";
+type SubscriptionStatus =
+  | "completed"
+  | "cancelled"
+  | "non-renewing"
+  | "active"
+  | "attention";
+
+interface Subscription {
+  status: SubscriptionStatus;
   amount: number;
   subscriptionCode: string;
   token: string;

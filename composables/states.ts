@@ -7,48 +7,33 @@ export const usePlans = () =>
         type: "Free",
         amount: "$0",
         description: "Perfect for getting started.",
-        benefits: ["1 Site", "Up to 5 Articles", "Basic Analytics"],
+        benefits: ["1 Site", "Up to 5 Articles"],
         label: "Get Started for Free",
-        plan: "free", // identifier for the plan
+        code: "free", // identifier for the plan
       },
       {
         type: "Basic",
         amount: "$10",
         description: "Great for growing blogs.",
-        benefits: [
-          "Up to 3 Sites",
-          "Up to 50 Articles per site",
-          "Advanced Analytics",
-          "Email Support",
-        ],
+        benefits: ["Up to 3 Sites", "Up to 150 Articles site"],
         label: "Choose Basic",
-        plan: "PLN_4haoatfu03xjols", // identifier for the plan
+        code: "PLN_4haoatfu03xjols", // identifier for the plan
       },
       {
         type: "Pro",
         amount: "$20",
         description: "Perfect for professionals.",
-        benefits: [
-          "Up to 10 Sites",
-          "Unlimited Articles per site",
-          "Priority Support",
-          "Custom Domain Support",
-        ],
+        benefits: ["Up to 10 Sites", "Unlimited Articles site"],
         label: "Choose Pro",
-        plan: "PLN_wqc6m8emcvrf2gy", // identifier for the plan
+        code: "PLN_wqc6m8emcvrf2gy", // identifier for the plan
       },
       {
         type: "Enterprise",
         amount: "$30",
         description: "For large organizations.",
-        benefits: [
-          "Unlimited Sites",
-          "Unlimited Articles",
-          "Dedicated Account Manager",
-          "24/7 Support",
-        ],
+        benefits: ["Unlimited Sites", "Unlimited Articles"],
         label: "Choose Enterprise",
-        plan: "PLN_kgq4k2o96yk841i", // identifier for the plan
+        code: "PLN_kgq4k2o96yk841i", // identifier for the plan
       },
     ];
     return plans;

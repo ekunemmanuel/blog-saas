@@ -7,7 +7,31 @@
 
       <div>
         <div class="flex gap-2 md:hidden">
-          <div v-if="isLoggedIn" class="flex gap-4"></div>
+          <div v-if="isLoggedIn" class="flex gap-4">
+            <!-- <UButton
+              label="Logout"
+              icon="hugeicons:logout-circle-01"
+              trailing
+              class="rounded-full"
+              color="rose"
+              variant="ghost"
+              @click="logOut"
+            />
+            <div class="flex gap-4">
+              <UButton
+                label="Dashboard"
+                icon="heroicons:arrow-right-20-solid"
+                trailing
+                class="rounded-full"
+                to="/dashboard"
+              />
+            </div> -->
+                      <UButton
+            icon="material-symbols:filter-list-rounded"
+            @click="isSliderOpen = !isSliderOpen"
+            variant="ghost"
+          />
+          </div>
           <UButton
             v-else
             label="Sign in"
@@ -17,11 +41,6 @@
             to="/login"
           />
 
-          <UButton
-            icon="material-symbols:filter-list-rounded"
-            @click="isSliderOpen = !isSliderOpen"
-            variant="ghost"
-          />
           <ColorMode />
         </div>
         <!-- large screen -->
@@ -102,6 +121,7 @@
           color="rose"
           variant="ghost"
           @click="logOut"
+          block
         />
       </template>
     </UCard>

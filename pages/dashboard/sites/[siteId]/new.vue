@@ -17,6 +17,10 @@ useHead({
     },
   ],
 });
+
+definePageMeta({
+  middleware: "post",
+});
 </script>
 
 <style scoped></style>

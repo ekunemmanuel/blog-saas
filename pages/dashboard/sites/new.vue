@@ -53,7 +53,7 @@
 <script lang="ts" setup>
 import { z } from "zod";
 import type { FormSubmitEvent } from "#ui/types";
-import type { Site } from "~/types";
+import type { Site, User } from "~/types";
 
 const user = useCurrentUser();
 const { createDoc, fetchDoc, fetchDocs, modifyDoc } = useFirebase();
@@ -197,6 +197,10 @@ useHead({
       content: "Create a new site by filling out the form below.",
     },
   ],
+});
+
+definePageMeta({
+  middleware: "sites",
 });
 </script>
 

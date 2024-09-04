@@ -124,11 +124,11 @@ const checking = ref(false);
 const postSchema = z.object({
   content: z.string().min(10),
   title: z.string().min(5).max(100),
-  description: z.string().min(10).max(300),
+  description: z.string().min(10).max(500),
   slug: z
     .string()
     .min(3)
-    .max(190)
+    .max(110)
     .transform((value) => value.toLowerCase().replace(/\s/g, "-"))
     .refine(
       async (slug) => {

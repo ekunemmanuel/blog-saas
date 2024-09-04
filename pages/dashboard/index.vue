@@ -1,12 +1,12 @@
 <template>
-  <div class="py-6 space-y-6">
+  <UContainer class="py-6 space-y-6">
     <div>
       <RecentSites />
     </div>
     <div>
       <RecentArticles />
     </div>
-  </div>
+  </UContainer>
 </template>
 
 <script lang="ts" setup>

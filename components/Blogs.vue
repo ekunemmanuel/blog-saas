@@ -2,11 +2,17 @@
   <div class="py-6 space-y-4">
     <UContainer>
       <div v-if="filteredData">
-        <div class="flex justify-center  text-center">
+        <div
+          class="flex md:justify-center justify-between md:items-start items-center text-center"
+        >
           <Logo />
-          <div class="flex-1">
-            <h1 class="text-2xl font-bold mb-4">{{ filteredData.name }}</h1>
-            <p class="dark:text-gray-400">{{ filteredData.description }}</p>
+          <div class="flex-1 max-w-2xl mx-auto hidden md:block">
+            <h1 class="text-2xl md:text-5xl font-bold mb-4">
+              {{ filteredData.name }}
+            </h1>
+            <p class="dark:text-gray-400 text-lg md:text-2xl">
+              {{ filteredData.description }}
+            </p>
           </div>
           <ColorMode />
         </div>
@@ -28,6 +34,14 @@
     </UContainer>
 
     <UContainer class="space-y-2">
+      <div class="flex-1 max-w-2xl mx-auto md:hidden block text-center" v-if="filteredData">
+        <h1 class="text-2xl md:text-5xl font-bold mb-4">
+          {{ filteredData.name }}
+        </h1>
+        <p class="dark:text-gray-400 text-lg md:text-2xl">
+          {{ filteredData.description }}
+        </p>
+      </div>
       <div
         v-if="pending"
         class="grid grid-cols-[repeat(auto-fill,minmax(min(250px,100%),1fr))] gap-2"

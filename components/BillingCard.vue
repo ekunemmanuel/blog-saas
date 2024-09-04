@@ -1,13 +1,7 @@
 <template>
   <UCard
     class="p-4 border-2 !h-full"
-    :class="[
-      !active
-        ? 'border-primary-500 text-primary-500'
-        : isActivePlan
-        ?  'border-primary-500 text-primary-500'
-        : 'text-gray-500',
-    ]"
+    :class="[isPrimaryColor ? 'border-primary-500' : 'text-gray-500']"
     :ui="{
       body: {
         base: 'flex flex-col gap-2 h-full',
@@ -20,24 +14,13 @@
       </div>
       <div class="flex justify-between items-end">
         <h2 class="text-lg font-semibold md:text-2xl">{{ billing.type }}</h2>
-        <p
-          class="text-4xl font-bold"
-          :class="[
-            !active
-              ? 'text-primary-500'
-              : isActivePlan
-              ? 'text-primary-500'
-              : 'text-gray-500',
-          ]"
-        >
+        <p class="text-4xl font-bold" :class="[isPrimaryColor ? 'text-primary-500' : 'text-gray-500']">
           {{ billing.amount }}
         </p>
       </div>
       <p>{{ billing.description }}</p>
     </div>
-    <ul
-      class="mt-2 space-y-1 text-sm text-gray-700 dark:text-gray-400 list-disc list-inside flex-1"
-    >
+    <ul class="mt-2 space-y-1 text-sm text-gray-700 dark:text-gray-400 list-disc list-inside flex-1">
       <li v-for="(benefit, index) in billing.benefits" :key="index">
         {{ benefit }}
       </li>
@@ -55,16 +38,16 @@ const props = defineProps<{
     amount: string;
     description: string;
     benefits: string[];
-    plan: string;
+    code: string;
     label: string;
   };
   plan?: string;
-  active?: boolean;
+  isLoggedIn?: boolean;
 }>();
 
-const isActivePlan = computed(
-  () => props.billing.type.toLowerCase() === props.plan?.toLowerCase()
-);
+const isActivePlan = computed(() => props.billing.type.toLowerCase() === props.plan?.toLowerCase());
+
+const isPrimaryColor = computed(() => !props.plan || props.plan.toLowerCase() === 'free' || isActivePlan.value);
 </script>
 
 <style scoped></style>

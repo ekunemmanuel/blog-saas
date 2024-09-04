@@ -13,11 +13,11 @@
       >
         <Logo />
         <UButton
-          variant="ghost"
+          icon="material-symbols:close-small-outline-rounded"
           color="gray"
-          label="close"
           @click="isSliderOpen = false"
           class="block md:hidden"
+          
         />
       </div>
     </template>

@@ -24,7 +24,7 @@
               <UInput v-model="state.name" />
             </UFormGroup>
             <UFormGroup label="Description" name="description">
-              <UTextarea v-model="state.description" />
+              <UTextarea v-model="state.description" :maxrows="8" autoresize />
             </UFormGroup>
             <UButton
               type="submit"

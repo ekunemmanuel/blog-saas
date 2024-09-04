@@ -1,12 +1,19 @@
 <template>
   <div v-if="site">
-    <UContainer class="p-4">
+    <UContainer class="p-4 md:flex items-center justify-between block space-y-4 md:space-0">
+      <div>
+        <h1 class="text-2xl font-bold">
+          {{ site.name }}
+        </h1>
+      </div>
       <div class="flex justify-end gap-2">
         <UButton
           icon="heroicons:document-text"
           variant="ghost"
           label="View Blog"
           :to="`/blogs/${site.subdirectory}`"
+          target="_blank"
+          rel="noopener noreferrer"
         />
         <UButton
           variant="ghost"

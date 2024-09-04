@@ -1,6 +1,11 @@
 <template>
-  <div class="space-y-2 px-6">
-    <h2 class="text-xl font-bold">Recent Articles</h2>
+  <UCard class="">
+    <template #header>
+      <div class="flex items -center justify-between">
+        <h2 class="text-xl font-bold">Recent Articles</h2>
+
+      </div>
+    </template>
     <div v-if="pending">
       <div
         class="gap-2 grid-cols-[repeat(auto-fill,minmax(min(250px,100%),1fr))] grid"
@@ -47,7 +52,7 @@
         </ClientOnly>
       </div>
     </div>
-  </div>
+  </UCard>
 </template>
 
 <script lang="ts" setup>
@@ -63,7 +68,7 @@ const { data: articles, pending } = getDocs<Post>({
     orderBy: [
       {
         fieldPath: "createdAt",
-        directionStr: "asc",
+        directionStr: "desc",
       },
     ],
     limit: 6,

@@ -1,12 +1,12 @@
 <template>
-  <div class="flex flex-col h-screen pb-6">
+  <div class="flex flex-col min-h-screen pb-6">
     <div class="flex-1">
       <UContainer class="p-6">
         <div v-if="data">
           <div class="space-y-4">
             <div>
               <h2 class="text-2xl font-semibold">{{ data.displayName }}</h2>
-              <p><strong>Email:</strong> {{ data.email }}</p>
+              <p>{{ data.email }}</p>
             </div>
             <div>
               <p><strong>Account Created:</strong> {{ data.createdAt }}</p>
@@ -63,7 +63,7 @@
                   "
                 />
               </div>
-              <div v-else>
+              <div v-else-if="data.subscription.status == 'cancelled'">
                 <UButton
                   label="Enable"
                   @click="
@@ -185,9 +185,9 @@ async function deleteUserAccount() {
       }
       await deleteUserRelatedData(userData);
 
-      await deleteAccount(user.value);
       await removeUser(userData.id);
     }
+    await deleteAccount(user.value);
 
     notification.success({
       title: "Success",
@@ -299,6 +299,16 @@ async function removePost(id: string) {
     id,
   });
 }
+
+useHead({
+  title: "Profile Page",
+  meta: [
+    {
+      name: "description",
+      content: "Your profile page",
+    },
+  ],
+});
 </script>
 
 <style></style>

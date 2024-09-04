@@ -1,28 +1,28 @@
 <template>
   <main>
-    <UContainer class="py-24 sm:py-32 md:py-40 relative">
+    <UContainer class="py-14 md:py-20 relative">
       <div
         class="mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl gap-16 sm:gap-y-24 flex flex-col"
       >
         <div class="text-center">
-          <div class="mb-10">
+          <div class="mb5">
             <UBadge variant="soft" class="rounded-full">
               Ultimate blogging saas for you
             </UBadge>
           </div>
           <h1
-            class="text-5xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-7xl"
+            class="text-5xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-7xl max-w-xl mx-auto"
           >
             Setup your blog <span class="text-primary"> in Minutes </span>
           </h1>
           <div
-            class="mt-6 text-lg tracking-tight text-gray-600 dark:text-gray-300"
+            class="mt-6 text-lg md:text-xl max-w-2xl mx-auto tracking-tight text-gray-600 dark:text-gray-300"
           >
             Setting up your blog is hard and time consuming. We make it easy for
             you to create a blog in minutes
           </div>
 
-          <div class="mt-10">
+          <div class="my-5">
             <UButton to="/dashboard" v-if="user">Dashboard</UButton>
             <div
               v-else
@@ -32,54 +32,59 @@
               <UButton to="/signup">Try for free</UButton>
             </div>
           </div>
-        </div>
-      </div>
-    </UContainer>
-    <!-- <UContainer class="py-24 sm:py-32 md:py-40 relative">
-      <div
-        class="mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl gap-16 sm:gap-y-24 flex flex-col"
-      >
-        <div class="text-center">
-          <p>Trusted by the best companies in the world</p>
-        </div>
-      </div>
-    </UContainer>
 
-    <UContainer class="py-24 sm:py-32">
-      <div
-        class="mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl gap-16 sm:gap-y-24 flex flex-col"
-      >
-        <div class="text-center flex flex-col items-center">
-          <h2
-            class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl lg:text-5xl"
-          >
-            Get your blog up and running in minutes
-          </h2>
-          <div class="mt-6 text-lg/8 text-gray-600 dark:text-gray-300">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua.
+          <div class="flex items-center gap-2 justify-center">
+            <div class="flex">
+              <UAvatarGroup
+                size="sm"
+                :ui="{
+                  margin: '-me-2.5',
+                  wrapper: 'items-center',
+                }"
+              >
+                <UAvatar
+                  alt="Emmanuel Apabiekun"
+                />
+                <UAvatar
+                  alt="Daniel Oluwagbemiga"
+                />
+                <UAvatar
+                  alt="Ayo Ayoola"
+                />
+                <UAvatar
+                  alt="Wale Ogunniyi"
+                />
+                <UAvatar
+                  alt="Tobi Ola"
+                />
+              </UAvatarGroup>
+            </div>
+            <div class="flex flex-col items-start">
+              <div>
+                <UIcon
+                  v-for="i in 5"
+                  :key="i"
+                  class="text-primary text-sm"
+                  name="material-symbols-light:star-rounded"
+                />
+              </div>
+              <p class="text-xs">5 Happy Customers</p>
+            </div>
           </div>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
-          <UCard
-            class="relative rounded-xl before:hidden before:lg:block before:absolute before:bg-slate-300 before:-inset-[2px] before:h-[calc(100%+4px)] before:w-[calc(100%+4px)] before:z-[-1] before:rounded-[13px] shadow-md"
-          >
-            <UIcon name="heroicons:cog" size="32" class="mb-2" />
-            <p
-              class="text-gray-900 dark:text-white text-base font-bold truncate"
-            >
-              Easy to use
-            </p>
-            <div class="text-[15px] text-gray-500 dark:text-gray-400 mt-1">
-              Id laborum laboris duis nostrud excepteur ut velit nulla magna
-              Lorem proident non.
-            </div>
-          </UCard>
-        </div>
       </div>
-    </UContainer> -->
-
-    <UContainer class="pb-8">
+    </UContainer>
+    <UContainer>
+      <div class="w-full bg-primary p-1 rounded-md">
+        <ClientOnly>
+          <Preview  />
+          <template #fallback>
+            <USkeleton class="h-[600px] w-full" />
+          </template>
+        </ClientOnly>
+      </div>
+    </UContainer>
+    <UContainer class="py-8">
       <h2 class="text-center text-3xl">Pricing</h2>
       <Billing />
     </UContainer>
@@ -89,7 +94,15 @@
 <script lang="ts" setup>
 const user = useCurrentUser();
 useHead({
-  title: "Blog SaaS",
+  title:
+    "Painite Blog - The Ultimate Blogging SaaS for Seamless Content Creation",
+  meta: [
+    {
+      name: "description",
+      content:
+        "Painite Blog is the leading SaaS platform designed for effortless content creation, management, and publishing. Empower your blogging journey with our intuitive tools and features.",
+    },
+  ],
 });
 </script>
 

@@ -1,6 +1,19 @@
 <template>
-  <div class="space-y-2 px-6">
-    <h2 class="text-xl font-bold">Recent Sites</h2>
+  <UCard class=" mx-2">
+    <template #header>
+      <div class="flex items -center justify-between">
+        <h2 class="text-xl font-bold">Recent Sites</h2>
+        <UButton
+          to="/dashboard/sites"
+          variant="soft"
+          size="sm"
+          trailling
+          trailing-icon="heroicons:chevron-right"
+        >
+          View All
+        </UButton>
+      </div>
+    </template>
     <div v-if="pending">
       <div
         class="gap-2 grid-cols-[repeat(auto-fill,minmax(min(250px,100%),1fr))] grid"
@@ -33,14 +46,14 @@
     >
       <div v-for="site in sites">
         <ClientOnly>
-          <SiteCard :site="site"/>
+          <SiteCard :site="site" />
           <template #placeholder>
             <CardSkeleton />
           </template>
         </ClientOnly>
       </div>
     </div>
-  </div>
+  </UCard>
 </template>
 
 <script lang="ts" setup>
@@ -56,7 +69,7 @@ const { data: sites, pending } = getDocs<Site>({
     orderBy: [
       {
         fieldPath: "createdAt",
-        directionStr: "asc",
+        directionStr: "desc",
       },
     ],
     limit: 6,

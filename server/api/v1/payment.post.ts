@@ -46,11 +46,12 @@ export default defineEventHandler(async (event) => {
     const user = userDoc.data() as User;
 
     // Check if the plan is still valid if it exists
-    if (user.subscription?.status == "active") {
+    if (user.subscription && user.subscription?.status != "cancelled") {
       throw createError({
         statusCode: 400,
-        message: "The current subscription is still valid until " +
-            formatDate(new Date(user.subscription.nextPaymentDate)),
+        message:
+          "The current subscription is still valid until " +
+          formatDate(new Date(user.subscription?.nextPaymentDate)),
         data: {
           message:
             "The current subscription is still valid until " +
@@ -90,7 +91,7 @@ export default defineEventHandler(async (event) => {
     throw createError({
       status: 400,
       message: "Pls try again or contact us",
-      data:error
+      data: error,
     });
   }
 });

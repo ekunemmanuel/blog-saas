@@ -13,7 +13,6 @@ const notification = useNotification();
 async function signup(data: SignUp) {
   const { data: user, error } = await signUp(data);
   if (error) {
-    console.log(user);
 
     return;
   }

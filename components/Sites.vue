@@ -81,7 +81,7 @@ const { data: sites } = getDocs<Site>({
     orderBy: [
       {
         fieldPath: "createdAt",
-        directionStr: "asc",
+        directionStr: "desc",
       },
     ],
   },

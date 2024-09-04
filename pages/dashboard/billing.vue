@@ -10,7 +10,15 @@
 </template>
 
 <script lang="ts" setup>
-
+useHead({
+  title: "Billing",
+  meta: [
+    {
+      name: "description",
+      content: "Pricing plans for everyone and every budget!",
+    },
+  ],
+})
 </script>
 
 <style></style>
