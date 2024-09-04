@@ -42,21 +42,11 @@
                   wrapper: 'items-center',
                 }"
               >
-                <UAvatar
-                  alt="Emmanuel Apabiekun"
-                />
-                <UAvatar
-                  alt="Daniel Oluwagbemiga"
-                />
-                <UAvatar
-                  alt="Ayo Ayoola"
-                />
-                <UAvatar
-                  alt="Wale Ogunniyi"
-                />
-                <UAvatar
-                  alt="Tobi Ola"
-                />
+                <UAvatar alt="Emmanuel Apabiekun" />
+                <UAvatar alt="Daniel Oluwagbemiga" />
+                <UAvatar alt="Ayo Ayoola" />
+                <UAvatar alt="Wale Ogunniyi" />
+                <UAvatar alt="Tobi Ola" />
               </UAvatarGroup>
             </div>
             <div class="flex flex-col items-start">
@@ -77,7 +67,7 @@
     <UContainer>
       <div class="w-full bg-primary p-1 rounded-md">
         <ClientOnly>
-          <Preview  />
+          <Preview />
           <template #fallback>
             <USkeleton class="h-[600px] w-full" />
           </template>
